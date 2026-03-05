@@ -1,0 +1,1500 @@
+            dict_cap_vnd['ITSM-CAP']['Всего требований на 4'] += 1
+        if v[2] == 'да' and v[0] == '3':
+            dict_cap_vnd['ITSM-CAP']['Всего выполнено требований на 3'] += 1
+        if v[2] == 'да' and v[0] == '4':
+            dict_cap_vnd['ITSM-CAP']['Всего выполнено требований на 4'] += 1
+    dict_cap_vnd['ITSM-CAP']['Всего требований'] = dict_cap_vnd['ITSM-CAP']['Всего требований на 3'] + dict_cap_vnd['ITSM-CAP']['Всего требований на 4']
+
+
+    # ********************************************** ITSM-MNTW ********************************************************************
+    # Расчет требований по процессу inc для 3-го уровня готовности
+    for k, v in dict_mntw.items():
+        if v[2] == 'нет':
+            dict_all_answer_no.append(k)
+        if v[0] == '3':
+            dict_mntw_vnd['ITSM-MNTW']['Всего требований на 3'] += 1
+        if v[0] == '4':
+            dict_mntw_vnd['ITSM-MNTW']['Всего требований на 4'] += 1
+        if v[2] == 'да' and v[0] == '3':
+            dict_mntw_vnd['ITSM-MNTW']['Всего выполнено требований на 3'] += 1
+        if v[2] == 'да' and v[0] == '4':
+            dict_mntw_vnd['ITSM-MNTW']['Всего выполнено требований на 4'] += 1
+    dict_mntw_vnd['ITSM-MNTW']['Всего требований'] = dict_mntw_vnd['ITSM-MNTW']['Всего требований на 3'] + dict_mntw_vnd['ITSM-MNTW']['Всего требований на 4']
+
+
+    # ********************************************** ITSM-SD ********************************************************************
+    # Расчет требований по процессу inc для 3-го уровня готовности
+    for k, v in dict_sd.items():
+        if v[2] == 'нет':
+            dict_all_answer_no.append(k)
+        if v[0] == '3':
+            dict_sd_vnd['ITSM-SD']['Всего требований на 3'] += 1
+        if v[0] == '4':
+            dict_sd_vnd['ITSM-SD']['Всего требований на 4'] += 1
+        if v[2] == 'да' and v[0] == '3':
+            dict_sd_vnd['ITSM-SD']['Всего выполнено требований на 3'] += 1
+        if v[2] == 'да' and v[0] == '4':
+            dict_sd_vnd['ITSM-SD']['Всего выполнено требований на 4'] += 1
+    dict_sd_vnd['ITSM-SD']['Всего требований'] = dict_sd_vnd['ITSM-SD']['Всего требований на 3'] + dict_sd_vnd['ITSM-SD']['Всего требований на 4']
+
+    #Словарь где собраны все отклонения из базы знаний для формирования итогового ЕРО.
+    dict_all_baza = {}
+
+
+    for keys, values in book_znanii.items():
+        if keys in dict_all_answer_no:
+            dict_all_baza[keys] = values
+
+
+    # print(book_znanii)
+    # print(dict_all_baza)
+
+
+    #Поиск и удаление \xa0 (пробел в Unicode) из строк, функция рекурсивно проходит через словарь, списки и строки
+    def replace_non_breaking_spaces(d):
+        if isinstance(d, dict):
+            return {k: replace_non_breaking_spaces(v) for k, v in d.items()}
+        elif isinstance(d, list):
+            return [replace_non_breaking_spaces(item) for item in d]
+        elif isinstance(d, str):
+            return d.replace('\xa0', ' ')#.replace('\n', '')
+        else:
+            return d
+
+
+    result_my_dict = replace_non_breaking_spaces(dict_all_baza)
+
+    # Все словари в переменной result_dicts_itsm
+    result_dicts_itsm = {'ITSM-INC': dict_inc,
+                    'ITSM-CATM': dict_catm,
+                    'ITSM-CFG': dict_cfg,
+                    'ITSM-SLM': dict_slm,
+                    'ITSM-PRB': dict_prb,
+                    'ITSM-ERM': dict_erm,
+                    'ITSM-RFF': dict_rff,
+                    'ITSM-ICHG': dict_ichg,
+                    'ITSM-UPD': dict_upd,
+                    'ITSM-AVL': dict_avl,
+                    'ITSM-M&E': dict_me,
+                    'ITSM-CONT': dict_cont,
+                    'ITSM-CAP': dict_cap,
+                    'ITSM-MNTW': dict_mntw,
+                    'ITSM-SD': dict_sd
+                    }
+
+    # Объединяем все словари в один
+    combined_dict = {}
+    for key, value in result_dicts_itsm.items():
+        combined_dict.update(value)
+
+
+
+    # Создаем пустой словарь для хранения результатов
+    combined_dict_itsm = {}
+
+    # Проходимся по внутренним словарям и суммируем значения
+    for key in dict_inc_vnd['ITSM-INC']:
+        value = (
+                dict_inc_vnd['ITSM-INC'].get(key, 0) +
+                dict_catm_vnd['ITSM-CATM'].get(key, 0) +
+                dict_cfg_vnd['ITSM-CFG'].get(key, 0) +
+                dict_slm_vnd['ITSM-SLM'].get(key, 0) +
+                dict_prb_vnd['ITSM-PRB'].get(key, 0) +
+                dict_erm_vnd['ITSM-ERM'].get(key, 0) +
+                dict_rff_vnd['ITSM-RFF'].get(key, 0) +
+                dict_ichg_vnd['ITSM-ICHG'].get(key, 0) +
+                dict_upd_vnd['ITSM-UPD'].get(key, 0) +
+                dict_avl_vnd['ITSM-AVL'].get(key, 0) +
+                dict_me_vnd['ITSM-M&E'].get(key, 0) +
+                dict_cont_vnd['ITSM-CONT'].get(key, 0))
+                # dict_cap_vnd['ITSM-CAP'].get(key, 0) +
+                # dict_mntw_vnd['ITSM-MNTW'].get(key, 0) +
+                # dict_sd_vnd['ITSM-SD'].get(key, 0))
+
+        combined_dict_itsm[key] = value  #Подсчет всех требований для 12 - ти ПРОЦЕССОВ для расчета индекса надежности и 3, 4-го уровней надежности!!!
+
+        # Создаем новый словарь, который будет объединять все словари - нужно для вывода на листе Надежности
+        combined_dict_all_proc = {}
+        combined_dict_all_proc.update(dict_inc_vnd)
+        combined_dict_all_proc.update(dict_catm_vnd)
+        combined_dict_all_proc.update(dict_cfg_vnd)
+        combined_dict_all_proc.update(dict_slm_vnd)
+        combined_dict_all_proc.update(dict_prb_vnd)
+        combined_dict_all_proc.update(dict_erm_vnd)
+        combined_dict_all_proc.update(dict_rff_vnd)
+        combined_dict_all_proc.update(dict_ichg_vnd)
+        combined_dict_all_proc.update(dict_upd_vnd)
+        combined_dict_all_proc.update(dict_avl_vnd)
+        combined_dict_all_proc.update(dict_me_vnd)
+        combined_dict_all_proc.update(dict_cont_vnd)
+        combined_dict_all_proc.update(dict_cap_vnd)
+        combined_dict_all_proc.update(dict_mntw_vnd)
+        combined_dict_all_proc.update(dict_sd_vnd)
+
+
+    #Нужно добавить в общий словарь для вывода 1 и 2-е значение каждого отклонения согласно ключу
+    #Это нужно для вывода в Exccel ({'ITSM-INC-01': ['3', 'Критичный', 'да'])
+    for id, vd in result_my_dict.items():
+        for kd, md in combined_dict.items():
+            if id == kd:
+                result_my_dict[id].append([md[0]])
+                result_my_dict[id].append([md[1]])
+
+
+
+    # print(result_my_dict)
+    #Подсчет всех отклонений по критичности result_all_itsm --->{'ITSM': {'Критичный': 84, 'Высокий': 89, 'Умеренный': 23}} у которых стоит НЕТ!!!
+    counts_itsm = {}
+    for key, values in result_my_dict.items():
+        risk_level = ''.join(values[-1])
+
+        if key not in counts_itsm:
+            counts_itsm[key] = {'Критичный': 0, 'Высокий': 0, 'Умеренный': 0, 'Рекомендация на развитие':0}
+            counts_itsm[key][risk_level] += 1
+
+    result_all_itsm = {'ITSM': {}}
+    # Проходим по каждому элементу исходного словаря
+    for key in counts_itsm.keys():
+        for status, value in counts_itsm[key].items():
+            # Если статус еще не добавлен в итоговый словарь, добавляем ег1
+            # с нулевым значением
+            if status not in result_all_itsm['ITSM']:
+                result_all_itsm['ITSM'][status] = 0
+            # Суммируем значение статуса
+            result_all_itsm['ITSM'][status] += value
+
+
+    wb = Workbook()
+    ws = wb.active
+    sheet = wb.active
+
+    ws.title = 'Единая дорожная карта'
+    ws_help = wb.create_sheet(title='Справочник')
+    second_workshet = wb.create_sheet(title='Показатели надежности')
+    five_workshet = wb.create_sheet(title='Детальная статистика по АС')
+    six_workshet = wb.create_sheet(title='Тепловая карта для 3-го уровня')
+    seven_workshet = wb.create_sheet(title='Тепловая карта для 4-го уровня')
+
+
+
+    # Определяем стиль границы
+    thin_border = Border(left=Side(style='thin'),
+                         right=Side(style='thin'),
+                         top=Side(style='thin'),
+                         bottom=Side(style='thin'))
+
+    #Изменяем ячейки по высоте на втором активном листе
+    second_workshet.row_dimensions[1].height = 50
+
+    #Изменяем ячейки по высоте на первом листе
+    ws.row_dimensions[1].height = 60
+
+
+    #Статусы для листа "СПРАВОЧНИК"----------------------------------------------------------------------------------------------
+    stata_help = {'Статус отклонения': ['(ДЗО) В работе - анализ',
+                                        '(ДЗО) В работе – план устранения на проверку ПАО',
+                                        '(ДЗО) В работе - реализация',
+                                        '(ДЗО) Устранено - на проверку ПАО',
+                                        '(ПАО) Устранено - подтверждено ПАО',
+                                        '(ДЗО) Исключение из реестра - на проверку ПАО',
+                                        '(ПАО) Исключение из реестра - подтверждено ПАО',
+                                        '(ДЗО) Принятие рисков - на утверждение ПАО',
+                                        '(ПАО) Принятие рисков - утверждено ПАО']}
+
+    about_stata = {'Описание статуса':['ДЗО анализирует найденное отклонение и рекомендации',
+                                       'ДЗО проработало необходимые мероприятия для устранения отклонения, ставит ДЗО',
+                                       'ПАО подтверждает мероприятия, проработанные ДЗО для устранения отклонения, ДЗО реализует мероприятия',
+                                       'ДЗО устранило отклонение, статус ставит ДЗО',
+                                       'ПАО согласно с тем, что отклонение считается устраненным, статус ставит ДЗО',
+                                       'ДЗО несогласно с отклонением и предлагает его исключить из списка на устранение, статус ставит ДЗО',
+                                       'ПАО согласно с тем, что данное отклонение исключается из списка на устранение, статус ставит ПАО',
+                                       'ДЗО принимает риски, связанные с отклонением и не будет его устранять, статус ставит ДЗО',
+                                       'ПАО согласно с тем, что ДЗО принимает риски, связанные с отклонением и не будет его устранять, статус ставит ПАО']}
+
+
+    # Заголовки
+    ws_help['P1'].value = 'Статус отклонения'
+    ws_help['Q1'].value = 'Описание статуса'
+
+    # Форматируем заголовки
+    ws_help['P1'].font = Font(name='Calibri', size=11, bold=True)
+    ws_help['Q1'].font = Font(name='Calibri', size=11, bold=True)
+    ws_help['P1'].font = Font(name='Calibri', size=12, bold=True)
+    ws_help.column_dimensions['P'].width = 35
+    ws_help['Q1'].font = Font(name='Calibri', size=12, bold=True)
+
+
+    # Заполняем статусы отклонений
+    start_row_zero = 2
+    for status in stata_help['Статус отклонения']:
+        cell = ws_help.cell(row=start_row_zero, column=16)
+        cell.value = status
+        cell.font = Font(name='Calibri', size=11, bold=False)
+        start_row_zero += 1
+
+    # Заполняем описания статусов
+    start_row_zero = 2
+    for description in about_stata['Описание статуса']:
+        cell = ws_help.cell(row=start_row_zero, column=17)
+        cell.value = description
+        cell.font = Font(name='Calibri', size=11, bold=False)
+        start_row_zero += 1
+
+    #----------------------------------------Конец вывода статусов отклонений----------------------------------------
+
+    # Скрываем второй лист
+    ws_help.sheet_state = 'hidden'  # Возможные состояния: visible, hidden, veryHidden
+    dv = DataValidation(type="list", formula1='=Справочник!$P$2:$P$10', allow_blank=True)
+    ws.add_data_validation(dv)
+
+
+    #Изменяем ячейки по ширине во второй вкладке ("Показатели надежности")
+
+    second_workshet['A1'].font = Font(name='Calibri', size=12, bold=True)
+    second_workshet.column_dimensions['A'].width = 70
+
+
+
+    second_workshet['B1'].font = Font(name='Calibri',size=12, bold=True)
+    second_workshet.column_dimensions['B'].width = 30
+
+    second_workshet['C1'].font = Font(name='Calibri',size=12, bold=True)
+    second_workshet.column_dimensions['C'].width = 30
+
+    second_workshet['D1'].font = Font(name='Calibri',size=12, bold=True)
+    second_workshet.column_dimensions['D'].width = 20
+
+
+    second_workshet['E1'].font = Font(name='Calibri',size=12, bold=True)
+    second_workshet.column_dimensions['E'].width = 20
+
+    second_workshet['F1'].font = Font(name='Calibri',size=12, bold=True)
+    second_workshet.column_dimensions['F'].width = 20
+
+    second_workshet['G1'].font = Font(name='Calibri',size=12, bold=True)
+    second_workshet.column_dimensions['G'].width = 20
+
+    second_workshet['H1'].font = Font(name='Calibri',size=12, bold=True)
+    second_workshet.column_dimensions['H'].width = 30
+
+    second_workshet['I1'].font = Font(name='Calibri',size=12, bold=True)
+    second_workshet.column_dimensions['I'].width = 30
+
+
+
+    ws.column_dimensions['A'].width = 25
+    ws['A1'].font = Font(name='Calibri', size=8, bold=True)
+    ws.column_dimensions['B'].width = 24
+    ws['B1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['C'].width = 20
+    ws['C1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['D'].width = 25
+    ws['D1'].font = Font(name='Calibri', size=8, bold=True)
+    ws.column_dimensions['E'].width = 31
+    ws['E1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['F'].width = 18
+    ws['F1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['G'].width = 10
+    ws['G1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['H'].width = 10
+    ws['H1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['I'].width = 16
+    ws['I1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['J'].width = 16
+    ws['J1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['K'].width = 18
+    ws['K1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['L'].width = 25
+    ws['L1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['M'].width = 50
+    ws['M1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['N'].width = 50
+    ws['N1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['O'].width = 14
+    ws['O1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['P'].width = 17
+    ws['P1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['Q'].width = 20
+    ws['Q1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['R'].width = 22
+    ws['R1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['S'].width = 17
+    ws['S1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['T'].width = 17
+    ws['T1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['U'].width = 14
+    ws['U1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['V'].width = 14
+    ws['V1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['W'].width = 35
+    ws['W1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['X'].width = 14
+    ws['X1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['Y'].width = 22
+    ws['Y1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['Z'].width = 22
+    ws['Z1'].font = Font(name='Calibri',size=8, bold=True)
+
+
+
+    #Изменяем ячейки по ширине в 4-й вкладке ("Детальная статитстика по АС")
+
+    five_workshet['A1'].font = Font(name='Calibri', size=12, bold=True)
+    five_workshet.column_dimensions['A'].width = 70
+    five_workshet['B1'].font = Font(name='Calibri',size=12, bold=True)
+    five_workshet.column_dimensions['B'].width = 30
+    five_workshet['C1'].font = Font(name='Calibri',size=12, bold=True)
+    five_workshet.column_dimensions['C'].width = 30
+    five_workshet['D1'].font = Font(name='Calibri',size=12, bold=True)
+    five_workshet.column_dimensions['D'].width = 30
+    five_workshet['E1'].font = Font(name='Calibri',size=12, bold=True)
+    five_workshet.column_dimensions['E'].width = 30
+
+
+    six_workshet['A1'].font = Font(name='Calibri', size=12, bold=True)
+    six_workshet.column_dimensions['A'].width = 17
+    six_workshet['B1'].font = Font(name='Calibri',size=12, bold=True)
+    six_workshet.column_dimensions['B'].width = 17
+    six_workshet['C1'].font = Font(name='Calibri',size=12, bold=True)
+    six_workshet.column_dimensions['C'].width = 17
+    six_workshet['D1'].font = Font(name='Calibri',size=12, bold=True)
+    six_workshet.column_dimensions['D'].width = 17
+    six_workshet['E1'].font = Font(name='Calibri',size=12, bold=True)
+    six_workshet.column_dimensions['E'].width = 17
+    six_workshet['F1'].font = Font(name='Calibri', size=12, bold=True)
+    six_workshet.column_dimensions['F'].width = 17
+    six_workshet['G1'].font = Font(name='Calibri',size=12, bold=True)
+    six_workshet.column_dimensions['G'].width = 17
+    six_workshet['H1'].font = Font(name='Calibri',size=12, bold=True)
+    six_workshet.column_dimensions['H'].width = 17
+    six_workshet['I1'].font = Font(name='Calibri',size=12, bold=True)
+    six_workshet.column_dimensions['I'].width = 17
+    six_workshet['J1'].font = Font(name='Calibri',size=12, bold=True)
+    six_workshet.column_dimensions['J'].width = 17
+    six_workshet['K1'].font = Font(name='Calibri', size=12, bold=True)
+    six_workshet.column_dimensions['K'].width = 17
+    six_workshet['L1'].font = Font(name='Calibri',size=12, bold=True)
+    six_workshet.column_dimensions['L'].width = 17
+    six_workshet['M1'].font = Font(name='Calibri',size=12, bold=True)
+    six_workshet.column_dimensions['M'].width = 17
+    six_workshet['N1'].font = Font(name='Calibri',size=12, bold=True)
+    six_workshet.column_dimensions['N'].width = 17
+    six_workshet['O1'].font = Font(name='Calibri',size=12, bold=True)
+    six_workshet.column_dimensions['O'].width = 17
+    six_workshet['P1'].font = Font(name='Calibri',size=12, bold=True)
+    six_workshet.column_dimensions['P'].width = 17
+    six_workshet['Q1'].font = Font(name='Calibri',size=12, bold=True)
+    six_workshet.column_dimensions['Q'].width = 17
+    six_workshet['R1'].font = Font(name='Calibri',size=12, bold=True)
+    six_workshet.column_dimensions['R'].width = 17
+    six_workshet['S1'].font = Font(name='Calibri',size=12, bold=True)
+    six_workshet.column_dimensions['S'].width = 17
+    six_workshet['T1'].font = Font(name='Calibri',size=12, bold=True)
+    six_workshet.column_dimensions['T'].width = 17
+
+
+
+    seven_workshet['A1'].font = Font(name='Calibri', size=12, bold=True)
+    seven_workshet.column_dimensions['A'].width = 17
+    seven_workshet['B1'].font = Font(name='Calibri',size=12, bold=True)
+    seven_workshet.column_dimensions['B'].width = 17
+    seven_workshet['C1'].font = Font(name='Calibri',size=12, bold=True)
+    seven_workshet.column_dimensions['C'].width = 17
+    seven_workshet['D1'].font = Font(name='Calibri',size=12, bold=True)
+    seven_workshet.column_dimensions['D'].width = 17
+    seven_workshet['E1'].font = Font(name='Calibri',size=12, bold=True)
+    seven_workshet.column_dimensions['E'].width = 17
+    seven_workshet['F1'].font = Font(name='Calibri', size=12, bold=True)
+    seven_workshet.column_dimensions['F'].width = 17
+    seven_workshet['G1'].font = Font(name='Calibri',size=12, bold=True)
+    seven_workshet.column_dimensions['G'].width = 17
+    seven_workshet['H1'].font = Font(name='Calibri',size=12, bold=True)
+    seven_workshet.column_dimensions['H'].width = 17
+    seven_workshet['I1'].font = Font(name='Calibri',size=12, bold=True)
+    seven_workshet.column_dimensions['I'].width = 17
+    seven_workshet['J1'].font = Font(name='Calibri',size=12, bold=True)
+    seven_workshet.column_dimensions['J'].width = 17
+    seven_workshet['K1'].font = Font(name='Calibri', size=12, bold=True)
+    seven_workshet.column_dimensions['K'].width = 17
+    seven_workshet['L1'].font = Font(name='Calibri',size=12, bold=True)
+    seven_workshet.column_dimensions['L'].width = 17
+    seven_workshet['M1'].font = Font(name='Calibri',size=12, bold=True)
+    seven_workshet.column_dimensions['M'].width = 17
+    seven_workshet['N1'].font = Font(name='Calibri',size=12, bold=True)
+    seven_workshet.column_dimensions['N'].width = 17
+    seven_workshet['O1'].font = Font(name='Calibri',size=12, bold=True)
+    seven_workshet.column_dimensions['O'].width = 17
+    seven_workshet['P1'].font = Font(name='Calibri',size=12, bold=True)
+    seven_workshet.column_dimensions['P'].width = 17
+    seven_workshet['Q1'].font = Font(name='Calibri',size=12, bold=True)
+    seven_workshet.column_dimensions['Q'].width = 17
+    seven_workshet['R1'].font = Font(name='Calibri',size=12, bold=True)
+    seven_workshet.column_dimensions['R'].width = 17
+    seven_workshet['S1'].font = Font(name='Calibri',size=12, bold=True)
+    seven_workshet.column_dimensions['S'].width = 17
+    seven_workshet['T1'].font = Font(name='Calibri',size=12, bold=True)
+    seven_workshet.column_dimensions['T'].width = 17
+
+
+    second_workshet['A1'] = 'Процесс'
+    second_workshet['B1'] = 'Всего требований'
+    second_workshet['C1'] = 'Требований на 3-й уровень'
+    second_workshet['D1'] = 'Выполнено требований на 3-й уровень'
+    second_workshet['E1'] = '%, достижения 3-го уровня'
+    second_workshet['F1'] = 'Требований на 4-й уровень'
+    second_workshet['G1'] = 'Выполнено требований на 4-й уровень'
+    second_workshet['H1'] = '%, достижения 4-го уровня'
+    # second_workshet['I1'] = 'Примечание'
+
+    # Цвет для Критического уровня риска(подкрашиваем ячейки)
+    high_risk_fill = PatternFill(start_color="FF9900", end_color="FF9900", fill_type="solid")
+    high_profile_fill = PatternFill(start_color="9bbb59", end_color="9bbb59", fill_type="solid")
+
+
+    five_workshet['A1'] = 'Название АС'
+    five_workshet['B1'] = 'Критичность'
+    five_workshet['C1'] = 'Уровень отклонения: Критичный'
+    five_workshet['D1'] = 'Уровень отклонения: Высокий'
+    five_workshet['E1'] = 'Уровень отклонения: Умеренный'
+
+    six_workshet['A1'] = 'Компания'
+    six_workshet['B1'] = 'Общий уровень надежности'
+    six_workshet['C1'] = 'Уровень технологической надежности'
+    six_workshet['D1'] = 'Управление технологическими инцидентами'
+    six_workshet['E1'] = 'Управление каталогом сервисов'
+    six_workshet['F1'] = 'Управление уровнями сервисов'
+    six_workshet['G1'] = 'Управление технологическими проблемами'
+    six_workshet['H1'] = 'Управление технологическими рисками'
+    six_workshet['I1'] = 'Управление инфраструктурными изменениями'
+    six_workshet['J1'] = 'Управление непрерывностью технологий'
+    six_workshet['K1'] = 'Управление доступностью технологий'
+    six_workshet['L1'] = 'Управление технологическими событиями и мониторингом'
+    six_workshet['M1'] = 'Управление технологическими запросами на обслуживание'
+    six_workshet['N1'] = 'Управление конфигурациями'
+    six_workshet['O1'] = 'Управление обновлением ПО'
+    six_workshet['P1'] = 'Ключевые проблемы'
+    six_workshet['Q1'] = 'Динамические показатели ITSM'
+    six_workshet['R1'] = 'Динамические показатели по технологиям'
+    six_workshet['S1'] = 'Уровень технологической надежности'
+    six_workshet['T1'] = 'Индекс надежности(%)'
+
+    seven_workshet['A1'] = 'Компания'
+    seven_workshet['B1'] = 'Общий уровень надежности'
+    seven_workshet['C1'] = 'Уровень технологической надежности'
+    seven_workshet['D1'] = 'Управление технологическими инцидентами'
+    seven_workshet['E1'] = 'Управление каталогом сервисов'
+    seven_workshet['F1'] = 'Управление уровнями сервисов'
+    seven_workshet['G1'] = 'Управление технологическими проблемами'
+    seven_workshet['H1'] = 'Управление технологическими рисками'
+    seven_workshet['I1'] = 'Управление инфраструктурными изменениями'
+    seven_workshet['J1'] = 'Управление непрерывностью технологий'
+    seven_workshet['K1'] = 'Управление доступностью технологий'
+    seven_workshet['L1'] = 'Управление технологическими событиями и мониторингом'
+    seven_workshet['M1'] = 'Управление технологическими запросами на обслуживание'
+    seven_workshet['N1'] = 'Управление конфигурациями'
+    seven_workshet['O1'] = 'Управление обновлением ПО'
+    seven_workshet['P1'] = 'Ключевые проблемы'
+    seven_workshet['Q1'] = 'Динамические показатели ITSM'
+    seven_workshet['R1'] = 'Динамические показатели по технологиям'
+    seven_workshet['S1'] = 'Уровень технологической надежности'
+    seven_workshet['T1'] = 'Индекс надежности(%)'
+
+
+
+    ws['A1'] = 'Код задачи/отклонения'
+    ws['B1'] = 'Вид объекта 1 уровень'
+    ws['C1'] = 'Вид объекта 2 уровень'
+    ws['D1'] = 'Вид объекта 3 уровень'
+    ws['E1'] = 'Категория задачи / отклонения'
+    ws['F1'] = 'Дополнительный комментарий по задаче / выявленному отклонению'
+    ws['G1'] = '№'
+    ws['H1'] = 'Инициатор'
+    ws['I1'] = 'Основание'
+    ws['J1'] = 'Код вопроса ЕОИТ'
+    ws['K1'] = 'Код объекта'
+    ws['L1'] = 'Объект'
+    ws['M1'] = 'Задача / выявленное отклонение'
+    # ws['N1'] = 'Негативные последствия'
+    ws['N1'] = 'Рекомендованные мероприятия'
+    ws['O1'] = 'Уровень принятия решения'
+    ws['P1'] = 'Вхождение в уровни готовности'
+    ws['Q1'] = 'Уровень критичности'
+
+    ws['R1'] = 'Запланированное мероприятие'
+    ws['S1'] = 'Код мероприятия из трекера компании Группы (при использовании трекера)'
+    ws['T1'] = 'Дата начала мероприятий'
+    ws['U1'] = 'Дата окончания мероприятий'
+    ws['V1'] = 'Ответственный'
+    ws['W1'] = 'Статус'
+    ws['X1'] = 'Комментарии компании Группы'
+    ws['Y1'] = 'Комментарии инициатора'
+
+
+    # Записываем данные на первую страницу отклонения по ITSM и AS
+    start_i = 0
+    count = 0
+
+
+
+    for i, (key, values) in enumerate(result_my_dict.items(), start=2):
+        for id, m in dict_itsm.items():
+            if id in key:
+
+                ws[f'L{i}'] = m
+                ws[f'K{i}'] = id
+        ws[f'I{i}'] = "ДТН"
+        ws[f'B{i}'] = "Процессы"
+        ws[f'O{i}'] = "Уровень 1"
+        dv.add(ws[f'W{i}']) # Добаввляем стату в колонку Y
+        ws[f'G{i}'] = (int(f'{i}') - 1)
+        ws[f'J{i}'] = key     #Начинаем писать данные со столбца --- F --- в ЕОИТ
+        ws[f'M{i}'] = ''.join(values[0])
+        # ws[f'N{i}'] = ''.join(values[1])   ----> Негативные последствия убрали из ЕОИТ
+        ws[f'N{i}'] = ''.join(values[2])
+        uroven = ''.join(values[3])
+
+        if uroven == '3':
+            ws[f'P{i}'] = 'Надежность 3'
+        else:
+            ws[f'P{i}'] = 'Надежность 4'
+        ws[f'Q{i}'] = ''.join(values[4])
+
+        if 'ITSM-CAP' in key or 'ITSM-SD' in key or 'ITSM-MNTW' in key:
+            ws[f'Q{i}'] = 'Рекомендация на развитие'
+            ws[f'P{i}'] = 'Надежность 4'
+
+
+        #Изменяем шрифт у активных полей
+
+        ws[f'B{i}'].font = Font(name='Calibri', size=8, bold=False)
+        ws[f'C{i}'].font = Font(name='Calibri', size=8, bold=False)
+        ws[f'E{i}'].font = Font(name='Calibri', size=8, bold=False)
+        ws[f'F{i}'].font = Font(name='Calibri', size=8, bold=False)
+        ws[f'G{i}'].font = Font(name='Calibri', size=8, bold=False)
+        ws[f'H{i}'].font = Font(name='Calibri', size=8, bold=False)
+        ws[f'I{i}'].font = Font(name='Calibri', size=8, bold=False)
+        ws[f'J{i}'].font = Font(name='Calibri', size=8, bold=False)
+        ws[f'K{i}'].font = Font(name='Calibri', size=8, bold=False)
+        ws[f'L{i}'].font = Font(name='Calibri', size=8, bold=False)
+        ws[f'M{i}'].font = Font(name='Calibri', size=8, bold=False)
+        ws[f'N{i}'].font = Font(name='Calibri', size=8, bold=False)
+        ws[f'O{i}'].font = Font(name='Calibri', size=8, bold=False)
+        ws[f'P{i}'].font = Font(name='Calibri', size=8, bold=False)
+        ws[f'Q{i}'].font = Font(name='Calibri', size=8, bold=False)
+        ws[f'R{i}'].font = Font(name='Calibri', size=8, bold=False)
+        ws[f'S{i}'].font = Font(name='Calibri', size=8, bold=False)
+        ws[f'Y{i}'].font = Font(name='Calibri', size=8, bold=False)
+        ws[f'X{i}'].font = Font(name='Calibri', size=8, bold=False)
+        ws[f'W{i}'].font = Font(name='Calibri', size=8, bold=False)
+
+        #Изменяем расположение активных полей
+
+        ws[f'B{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        ws[f'C{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        ws[f'E{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        ws[f'F{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        ws[f'G{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        ws[f'H{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        ws[f'I{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        ws[f'J{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        ws[f'K{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        ws[f'L{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        ws[f'M{i}'].alignment = Alignment(horizontal="left", vertical="top", wrapText=True)
+        ws[f'N{i}'].alignment = Alignment(horizontal="left", vertical="top", wrapText=True)
+        ws[f'O{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        ws[f'P{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        ws[f'S{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        ws[f'Q{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        ws[f'R{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        ws[f'Y{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        ws[f'X{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        ws[f'W{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        start_i = i
+
+
+    for i, (key, values) in enumerate(my_function().items(), start=start_i):
+        for j in values:
+            count += 1
+            ws[f'G{start_i+count}'] = (int(f'{start_i+count}') - 1)
+            ws[f'I{start_i+count}'] = "ДТН"
+            ws[f'B{start_i+count}'] = "АС"
+            ws[f'O{start_i+count}'] = "Уровень 1"
+            ws[f'J{start_i+count}'] = j[0]
+            dv.add(ws[f'W{start_i+count}']) # Добаввляем стату в колонку X
+            ws[f'K{start_i+count}'] = j[7]
+
+            ws[f'L{start_i+count}'] = key
+            ws[f'M{start_i+count}'] = j[2]
+            # ws[f'N{start_i+count}'] = j[3] ----> Негативные последствия убрали из ЕОИТ
+            ws[f'N{start_i+count}'] = j[4]
+            try:
+                if j[8] == 3:
+
+                    ws[f'P{start_i+count}'] = 'Надежность 3'
+                else:
+                    ws[f'P{start_i+count}'] = 'Надежность 4'
+                ws[f'Q{start_i+count}'] = j[5]
+            except IndexError:
+                # print(j)
+                # обработать случай, когда элемента нет
+                pass
+
+            #Изменяем шрифт у активных полей
+            ws[f'B{start_i+count}'].font = Font(name='Calibri', size=8, bold=False)
+            ws[f'C{start_i+count}'].font = Font(name='Calibri', size=8, bold=False)
+            ws[f'E{start_i+count}'].font = Font(name='Calibri', size=8, bold=False)
+            ws[f'F{start_i+count}'].font = Font(name='Calibri', size=8, bold=False)
+            ws[f'G{start_i+count}'].font = Font(name='Calibri', size=8, bold=False)
+            ws[f'H{start_i+count}'].font = Font(name='Calibri', size=8, bold=False)
+            ws[f'I{start_i+count}'].font = Font(name='Calibri', size=8, bold=False)
+            ws[f'J{start_i+count}'].font = Font(name='Calibri', size=8, bold=False)
+            ws[f'K{start_i+count}'].font = Font(name='Calibri', size=8, bold=False)
+            ws[f'L{start_i+count}'].font = Font(name='Calibri', size=8, bold=False)
+            ws[f'M{start_i+count}'].font = Font(name='Calibri', size=8, bold=False)
+            ws[f'N{start_i+count}'].font = Font(name='Calibri', size=8, bold=False)
+            ws[f'O{start_i+count}'].font = Font(name='Calibri', size=8, bold=False)
+            ws[f'P{start_i+count}'].font = Font(name='Calibri', size=8, bold=False)
+            ws[f'Q{start_i+count}'].font = Font(name='Calibri', size=8, bold=False)
+            ws[f'R{start_i+count}'].font = Font(name='Calibri', size=8, bold=False)
+            ws[f'S{start_i+count}'].font = Font(name='Calibri', size=8, bold=False)
+            ws[f'Y{start_i+count}'].font = Font(name='Calibri', size=8, bold=False)
+            ws[f'X{start_i+count}'].font = Font(name='Calibri', size=8, bold=False)
+            ws[f'W{start_i+count}'].font = Font(name='Calibri', size=8, bold=False)
+
+            #Изменяем расположение активных полей
+            ws[f'B{start_i+count}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            ws[f'C{start_i+count}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            ws[f'E{start_i+count}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            ws[f'F{start_i+count}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            ws[f'G{start_i+count}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            ws[f'H{start_i+count}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            ws[f'I{start_i+count}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            ws[f'J{start_i+count}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            ws[f'K{start_i+count}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            ws[f'L{start_i+count}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            ws[f'M{start_i+count}'].alignment = Alignment(horizontal="left", vertical="top", wrapText=True)
+            ws[f'N{start_i+count}'].alignment = Alignment(horizontal="left", vertical="top", wrapText=True)
+            ws[f'O{start_i+count}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            ws[f'P{start_i+count}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            ws[f'S{start_i+count}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            ws[f'Q{start_i+count}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            ws[f'R{start_i+count}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            ws[f'Y{start_i+count}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            ws[f'X{start_i+count}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            ws[f'W{start_i+count}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+
+    #Записываем данные на вторую страницу лист Надежность
+    # print(combined_dict_all_proc)
+    # print(all_treb_as) ## {'Address Processing': [(38.0, 2, 11.0, 1.5)]}
+    # print(data_new_count) ##{'Address Processing': ['BO', 0, 74, 10]}
+    # print(all_treb_as)
+
+    def transform_data(input_data):
+        output = {'Всего требований': 0, 'Всего требований на 3': 0, 'Всего выполнено требований на 3': 0, 'Всего требований на 4': 0, 'Всего выполнено требований на 4': 0}
+        for process, values in input_data.items():
+            for value_tuple in values:
+                critical = value_tuple[0]
+                critical_yes = value_tuple[1]
+                high = value_tuple[2]
+                high_yes = value_tuple[3]
+
+                output['Всего требований на 3'] += critical
+                output['Всего выполнено требований на 3'] += critical_yes
+                output['Всего требований на 4'] += high
+                output['Всего выполнено требований на 4'] += high_yes
+                output['Всего требований'] = output['Всего требований на 3'] + output['Всего требований на 4']
+        return output
+
+        # Преобразование данных
+    output_data = transform_data(all_treb_as)
+
+    #ITSM
+    #{'Всего требований': 223, 'Всего требований на 3': 158, 'Всего выполнено требований на 3': 21, 'Всего требований на 4': 65, 'Всего выполнено требований на 4': 0}
+    # print(combined_dict_itsm)
+    #AS
+    #{'Всего требований': 103.0, 'Всего требований на 3': 81.0, 'Всего выполнено требований на 3': 4, 'Всего требований на 4': 22.0, 'Всего выполнено требований на 4': 3.0}
+    # print(output_data)
+
+    # Объединение словарей
+    combined_dict_it_as = {}
+
+    for key in combined_dict_itsm:
+        combined_dict_it_as[key] = combined_dict_itsm.get(key, 0) + output_data.get(key, 0)
+
+
+    index_nadejnost = (combined_dict_it_as['Всего выполнено требований на 3'] +
+                       combined_dict_it_as['Всего выполнено требований на 4']) / (combined_dict_it_as['Всего требований на 3'] +
+                                                                                  combined_dict_it_as['Всего требований на 4']) * 100
+
+
+    second_workshet['B22'] = str(round(index_nadejnost, 0)) + '%'
+
+
+    three_uroven_nadejnosti = combined_dict_it_as['Всего выполнено требований на 3']/combined_dict_it_as['Всего требований на 3'] + 2
+    four_uroven_nadejnosti = combined_dict_it_as['Всего выполнено требований на 4']/combined_dict_it_as['Всего требований на 4'] + 3
+    second_workshet['A25'] = '3-й уровень готовности  надежности'
+    second_workshet['A26'] = '4-й уровень готовности  надежности'
+    second_workshet['B25'] = float(round(three_uroven_nadejnosti, 2))
+    second_workshet['B26'] = float(round(four_uroven_nadejnosti, 2))
+    second_workshet['B20'] = float(second_workshet['B25'].value)
+
+
+
+    for i, (key, values) in enumerate(dict_itsm.items(), start=2):
+        if key not in ['ITSM-CAP', 'ITSM-SD', 'ITSM-MNTW']:
+            second_workshet[f'A{i}'] = values
+            second_workshet[f'B{i}'] = combined_dict_all_proc[key]['Всего требований']
+            second_workshet[f'C{i}'] = combined_dict_all_proc[key]['Всего требований на 3']
+            second_workshet[f'D{i}'] = combined_dict_all_proc[key]['Всего выполнено требований на 3']
+
+            if combined_dict_all_proc[key]['Всего требований на 3'] == 0:
+                second_workshet[f'E{i}'] = 0
+            else:
+                second_workshet[f'E{i}'] = f"{int(round(second_workshet[f'D{i}'].value / second_workshet[f'C{i}'].value * 100))}%"
+                # second_workshet[f'E{i}'] = str(round(second_workshet[f'D{i}'].value / second_workshet[f'C{i}'].value, 2) * 100) + '%'
+            second_workshet[f'F{i}'] = combined_dict_all_proc[key]['Всего требований на 4']
+            second_workshet[f'G{i}'] = combined_dict_all_proc[key]['Всего выполнено требований на 4']
+            if combined_dict_all_proc[key]['Всего требований на 4'] == 0:
+                second_workshet[f'H{i}'] = 0
+            else:
+                # second_workshet[f'H{i}'] = str(round(second_workshet[f'G{i}'].value / second_workshet[f'F{i}'].value, 2) * 100) + '%'
+                second_workshet[f'H{i}'] = f"{int(round(second_workshet[f'G{i}'].value / second_workshet[f'F{i}'].value * 100))}%"
+
+
+
+
+        second_workshet[f'B{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        second_workshet[f'C{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        second_workshet[f'D{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        second_workshet[f'E{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        second_workshet[f'F{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        second_workshet[f'G{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        second_workshet[f'H{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        second_workshet[f'I{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+
+
+        second_workshet['A16'] = 'Выбран профиль'
+        second_workshet['B16'].fill = high_profile_fill
+        second_workshet['B16'] = result_profile['Каким максимальным уровнем критичности обладает ИТ-сервис в компании?']
+        second_workshet['A17'] = 'Динамические показатели'
+        second_workshet['A18'] = 'ITSM'
+        second_workshet['B17'] = 'Критичное'
+        # second_workshet['B18'] = str(dict_tree_four_assesment_itsm['Всего критичных']) + '/' + str(dict_tree_four_assesment_itsm['Выполнено критичных'])
+        second_workshet['B18'] = str(result_all_itsm['ITSM']['Критичный']) + ' / ' + '0'
+        second_workshet['C17'] = 'Высокое'
+        # second_workshet['C18'] = str(dict_tree_four_assesment_itsm['Всего высоких']) + '/' + str(dict_tree_four_assesment_itsm['Выполнено высоких'])
+        second_workshet['C18'] = str(result_all_itsm['ITSM']['Высокий']) + ' / ' + '0'
+        second_workshet['D17'] = 'Умеренное'
+        # second_workshet['D18'] = str(dict_tree_four_assesment_itsm['Всего умеренных']) + '/' + str(dict_tree_four_assesment_itsm['Выполнено умеренных'])
+        second_workshet['D18'] = str(result_all_itsm['ITSM']['Умеренный'])  + ' / ' + '0'
+        second_workshet['A20'] = 'На слайд, в графу "Уровень надёжности" ='
+        second_workshet['A22'] = 'Индекс надежности для ЦТК и тепловой карты'
+
+
+        #РАСЧЕТЫ ИНДЕКСА НАДЕЖНОСТИ, А ТАКЖЕ УРОВНЯ ГОТОВНОСТИ ПО УРОВНЯМ
+
+        # print(combined_dict_all_proc)
+        # print(all_treb_as) ## {'Address Processing': [(38.0, 2, 11.0, 1.5)]}
+        # print(combined_dict_itsm)
+
+        # print(combined_dict_all_proc)
+
+
+
+    # выравниваем ячейки, только имеющие значения
+    for cell in ws[1]:
+        if cell.value:
+
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+            ws['C1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            ws['D1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            ws['E1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            ws['F1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            ws['G1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            ws['H1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            ws['I1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            ws['J1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            ws['K1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            ws['L1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            ws['N1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            ws['Q1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            ws['P1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            ws['O1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            ws['R1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            ws['S1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            ws['T1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            ws['U1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            ws['V1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            ws['W1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            ws['X1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            ws['Y1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            ws['Z1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            ws['AA1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            ws['AB1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            ws['AG1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            ws['AH1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            ws['AC1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+
+
+   # Нужно выполнить проверку если АС отсутствует в момент сборки ЕРО,
+   # т.к. в момент оценки могут быть выполнены все отклонения!!!
+
+
+    dict_reestr_all_as = {}
+    for key, values in all_treb_as.items():
+        if key not in data_new_count:
+            dict_reestr_all_as[key] = [rezult_as[key][0], 0, 0, 0]
+        else:
+            dict_reestr_all_as[key] = data_new_count[key]
+    # print(dict_reestr_all_as)
+    # print(all_treb_as) ----> {'Address Processing': [(38.0, 2, 11.0, 1.5)], 'Testing': [(43.0, 43.0, 11.0, 11.0)]}
+    # print(data_new_count) ----> {'Address Processing': ['BO', 0, 74, 10]}
+    # print(rezult_as) ----> {'Address Processing': ['BO', 2.05, 3.14], 'Testing': ['BC', 3, 4]}
+    # print(dict_reestr_all_as) ----> {'Address Processing': ['BO', 0, 74, 10], 'Testing': ['BC', 0, 0, 0]}
+
+
+    #Заполняем ЛИСТ ИТ-ТЕХНОЛОГИЙ
+    count_as = 0
+    for i, (key, values) in enumerate(dict_reestr_all_as.items(), start=2):
+        count_as += 1
+
+        five_workshet[f'A{i}'] = key
+        five_workshet[f'B{i}'] = values[0]
+        five_workshet[f'C{i}'] = values[1]
+        five_workshet[f'D{i}'] = values[2]
+        five_workshet[f'E{i}'] = values[3]
+
+
+        five_workshet[f'A{i}'].alignment = Alignment(horizontal="left", vertical="center", wrapText=True)
+        five_workshet[f'B{i}'].alignment = Alignment(horizontal="center", vertical="top", wrapText=True)
+        five_workshet[f'C{i}'].alignment = Alignment(horizontal="center", vertical="top", wrapText=True)
+        five_workshet[f'D{i}'].alignment = Alignment(horizontal="center", vertical="top", wrapText=True)
+        five_workshet[f'E{i}'].alignment = Alignment(horizontal="center", vertical="top", wrapText=True)
+
+        six_workshet[f'B{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        six_workshet[f'C{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        six_workshet[f'D{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        six_workshet[f'E{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        six_workshet[f'F{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        six_workshet[f'G{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        six_workshet[f'H{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        six_workshet[f'I{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        six_workshet[f'J{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        six_workshet[f'K{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        six_workshet[f'L{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        six_workshet[f'M{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        six_workshet[f'N{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        six_workshet[f'O{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        six_workshet[f'P{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+
+        seven_workshet[f'B{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        seven_workshet[f'C{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        seven_workshet[f'D{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        seven_workshet[f'E{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        seven_workshet[f'F{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        seven_workshet[f'G{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        seven_workshet[f'H{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        seven_workshet[f'I{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        seven_workshet[f'J{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        seven_workshet[f'K{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        seven_workshet[f'L{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        seven_workshet[f'M{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        seven_workshet[f'N{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        seven_workshet[f'O{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        seven_workshet[f'P{i}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+
+        five_workshet[f'A{i}'].font = Font(name='Calibri', size=11, bold=False)
+        five_workshet[f'E{i}'].font = Font(name='Calibri', size=11, bold=False)
+        five_workshet[f'B{i}'].font = Font(name='Calibri', size=11, bold=False)
+        five_workshet[f'C{i}'].font = Font(name='Calibri', size=11, bold=False)
+        five_workshet[f'D{i}'].font = Font(name='Calibri', size=11, bold=False)
+        five_workshet[f'E{i}'].font = Font(name='Calibri', size=11, bold=False)
+
+
+    try:
+        uroven_tech_nadejnosti_three = (output_data['Всего выполнено требований на 3']) / (output_data['Всего требований на 3'])  + 2
+    except ZeroDivisionError:
+        uroven_tech_nadejnosti_three = 2
+
+    try:
+        uroven_tech_nadejnosti_four = (output_data['Всего выполнено требований на 4']) / (output_data['Всего требований на 4']) + 3
+
+    except ZeroDivisionError:
+        uroven_tech_nadejnosti_four = 3
+
+
+    five_workshet['A1'] = 'Название АС'
+    five_workshet['B1'] = 'Критичность'
+    five_workshet['C1'] = 'Уровень отклонения: Критичный'
+    five_workshet['D1'] = 'Уровень отклонения: Высокий'
+    five_workshet['E1'] = 'Уровень отклонения: Умеренный'
+    five_workshet[f'B{count_as + 8}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+    five_workshet[f'A{count_as + 4}'] = 'Динамические показатели'
+    five_workshet[f'A{count_as + 5}'] = 'АС'
+    five_workshet[f'A{count_as + 7}'] = 'Доп. показатели / инфо'
+    five_workshet[f'A{count_as + 8}'] = 'На слайд, в графу "Уровень технологической надежности" ='
+
+
+
+    #Убрал, проверку пока все компании не дойдут до 3-го уровня надежности!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    if output_data['Всего выполнено требований на 3'] == output_data['Всего требований на 3'] and output_data['Всего требований на 3'] != 0:
+        five_workshet[f'B{count_as + 8}'] = str(round(uroven_tech_nadejnosti_four, 2))
+
+    else:
+        five_workshet[f'B{count_as + 8}'] = str(round(uroven_tech_nadejnosti_three, 2))
+
+    five_workshet[f'B{count_as + 4}'] = 'Критичное'
+    five_workshet[f'C{count_as + 4}'] = 'Высокое'
+    five_workshet[f'D{count_as + 4}'] = 'Умеренное'
+    five_workshet[f'A{count_as + 8}'].font = Font(name='Calibri', size=11, bold=True)
+    five_workshet[f'B{count_as + 8}'].font = Font(name='Calibri', size=11, bold=True)
+
+
+    # Эта часть кода  для Подсчета ОБЩЕГО КОЛИЧЕСТВА ОТКЛОНЕНИЙ ПО ВСЕМ АС ===================> на странице Детальная Статистика
+    # Итоговый словарь
+
+    new_statistics_as = {}
+
+    # Инициализация счетчиков
+    critical = [0]
+    high = [0]
+    moderate = [0]
+
+
+    # Проходим по каждому элементу исходного словаря
+    for key, values in data_new_count.items():
+        # Пропускаем элементы, которые не содержат '/' в первом элементе
+        # Критичные
+        critical.append(values[1])
+        high.append(values[2])
+        moderate.append(values[3])
+
+    # Заполнение итогового словаря
+    new_statistics_as['Критичное'] = sum(critical)
+    new_statistics_as['Высокое'] = sum(high)
+    new_statistics_as['Умеренное'] = sum(moderate)
+
+    five_workshet[f"B{count_as + 5}"] = str(new_statistics_as['Критичное']) + ' / ' + '0'
+    five_workshet[f"C{count_as + 5}"] = str(new_statistics_as['Высокое']) + ' / ' + '0'
+    five_workshet[f"D{count_as + 5}"] = str(new_statistics_as['Умеренное']) + ' / ' + '0'
+
+
+
+    # Функция для замены % в значении, если оно есть
+    def remove_percent(value):
+        if isinstance(value, str):  # Проверяем, является ли значение строкой
+            return value.replace('%', '')  # Удаляем символ %
+        return value  # Если это не строка, возвращаем значение как есть
+
+    six_workshet['A2'] = name_dtn
+    six_workshet['B2'] = second_workshet['B25'].value
+    if output_data['Всего выполнено требований на 3'] == output_data['Всего требований на 3']:
+        six_workshet['C2'] = '3.0'
+    else:
+        value = round(uroven_tech_nadejnosti_three, 2)
+        six_workshet['C2'] = f"{value:.2f}".replace('.', ',')  # Заменяем запятую на точку
+
+    six_workshet['D2'] = remove_percent(second_workshet['E2'].value)
+    six_workshet['E2'] = remove_percent(second_workshet['E3'].value)
+    six_workshet['F2'] = remove_percent(second_workshet['E4'].value)
+    six_workshet['G2'] = remove_percent(second_workshet['E5'].value)
+
+
+    if dict_erm_vnd['ITSM-ERM']['Всего требований на 3'] != 0:
+        six_workshet['H2'] = remove_percent(second_workshet['E6'].value)
+    else:
+        six_workshet['H2'] = '-'
+
+    six_workshet['I2'] = remove_percent(second_workshet['E7'].value)
+
+    if dict_cont_vnd['ITSM-CONT']['Всего требований на 3'] != 0:
+        six_workshet['J2'] = remove_percent(second_workshet['E8'].value)
+    else:
+        six_workshet['J2'] = '-'
+
+    if dict_avl_vnd['ITSM-AVL']['Всего требований на 3'] != 0:
+        six_workshet['K2'] = remove_percent(second_workshet['E9'].value)
+    else:
+        six_workshet['K2'] = '-'
+    six_workshet['L2'] = remove_percent(second_workshet['E10'].value)
+    six_workshet['M2'] = remove_percent(second_workshet['E11'].value)
+    six_workshet['N2'] = remove_percent(second_workshet['E12'].value)
+
+    if dict_upd_vnd['ITSM-UPD']['Всего требований на 3'] != 0:
+        six_workshet['O2'] = remove_percent(second_workshet['E13'].value)
+    else:
+        six_workshet['O2'] = '-'
+
+
+    seven_workshet['A2'] = name_dtn
+    seven_workshet['B2'] = second_workshet['B26'].value
+    seven_workshet_one = round(uroven_tech_nadejnosti_four, 2)
+    seven_workshet['C2'] = f"{seven_workshet_one:.2f}".replace('.', ',')  # Заменяем запятую на точку
+    seven_workshet['D2'] = remove_percent(second_workshet['H2'].value)
+    seven_workshet['E2'] = remove_percent(second_workshet['H3'].value)
+    seven_workshet['F2'] = remove_percent(second_workshet['H4'].value)
+    seven_workshet['G2'] = remove_percent(second_workshet['H5'].value)
+    seven_workshet['H2'] = remove_percent(second_workshet['H6'].value)
+    seven_workshet['I2'] = remove_percent(second_workshet['H7'].value)
+    seven_workshet['J2'] = remove_percent(second_workshet['H8'].value)
+    seven_workshet['K2'] = remove_percent(second_workshet['H9'].value)
+    seven_workshet['L2'] = remove_percent(second_workshet['H10'].value)
+    seven_workshet['M2'] = remove_percent(second_workshet['H11'].value)
+    seven_workshet['N2'] = remove_percent(second_workshet['H12'].value)
+    seven_workshet['O2'] = remove_percent(second_workshet['H13'].value)
+
+
+    for cell in five_workshet[1]:
+        if cell.value:
+            # Устанавливаем выравнивание для соответствующих ячеек
+            five_workshet[f"B{count_as + 4}"].alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+            five_workshet[f"C{count_as + 4}"].alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+            five_workshet[f"D{count_as + 4}"].alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+            five_workshet[f"B{count_as + 5}"].alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+            five_workshet[f"C{count_as + 5}"].alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+            five_workshet[f"D{count_as + 5}"].alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+
+
+    #-----------------Записываю результаты в Тепловую карту показания технологической надежности для АС--------------------
+    six_workshet['R2'] = (
+            str(new_statistics_as['Критичное']) + ' / ' + '0' + ', ' +
+            str(new_statistics_as['Высокое']) + ' / ' + '0' + ', ' +
+            str(new_statistics_as['Умеренное']) + ' / ' + '0'
+    )
+
+    six_workshet['Q2'] = (
+            str(result_all_itsm['ITSM']['Критичный']) + ' / ' + '0' + ', ' +
+            str(result_all_itsm['ITSM']['Высокий']) + ' / ' + '0' + ', ' +
+            str(result_all_itsm['ITSM']['Умеренный']) + ' / ' + '0'
+
+    )
+    six_workshet['T2'] = second_workshet['B22'].value
+
+    critical_value = second_workshet['B16'].value
+    # Запись с проверкой допустимых значений
+    if critical_value in ['OP', 'BO', 'BC и выше']:  # Если значение из допустимого списка
+        six_workshet['S2'] = critical_value
+        seven_workshet['S2'] = critical_value
+    elif critical_value is not None:  # Если есть значение, но недопустимое
+        six_workshet['S2'] = f"Некорректное значение: {critical_value}. Введите OP, BO, BC и выше"
+        seven_workshet['S2'] = f"Некорректное значение: {critical_value}. Введите OP, BO, BC и выше"
+    else:  # Если значение отсутствует
+        six_workshet['S2'] = "Введите Критичность вручную (OP, BO, BC и выше)"
+        seven_workshet['S2'] = "Введите Критичность вручную (OP, BO, BC и выше)"
+
+
+    seven_workshet['R2'] = (
+            str(new_statistics_as['Критичное']) + ' / ' + '0' + ', ' +
+            str(new_statistics_as['Высокое']) + ' / ' + '0' + ', ' +
+            str(new_statistics_as['Умеренное']) + ' / ' + '0'
+    )
+
+    seven_workshet['Q2'] = (
+            str(result_all_itsm['ITSM']['Критичный']) + ' / ' + '0' + ', ' +
+            str(result_all_itsm['ITSM']['Высокий']) + ' / ' + '0' + ', ' +
+            str(result_all_itsm['ITSM']['Умеренный']) + ' / ' + '0'
+
+    )
+
+    seven_workshet['T2'] = second_workshet['B22'].value
+
+
+
+    six_workshet['P2'] = 'Ключевые проблемы (максимум 5 шт.), выбираем вручную, каждая отделяется друг от друга точкой с запятой. (Для удобства в ячейке  используем alt+Enter)'
+    seven_workshet['P2'] = 'Ключевые проблемы (максимум 5 шт.), выбираем вручную, каждая отделяется друг от друга точкой с запятой. (Для удобства в ячейке  используем alt+Enter)'
+
+
+
+    # выравниваем ячейки, только имеющие значения
+    for cell in second_workshet[1]:
+        if cell.value:
+
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+
+            #Изменяем шрифт у активных полей
+            second_workshet['A20'].font = Font(name='Calibri', size=11, bold=True)
+            second_workshet['A21'].font = Font(name='Calibri', size=11, bold=True)
+            second_workshet['A22'].font = Font(name='Calibri', size=11, bold=True)
+            second_workshet['A16'].font = Font(name='Calibri', size=11, bold=True)
+            second_workshet['A23'].font = Font(name='Calibri', size=11, bold=True)
+            second_workshet['A24'].font = Font(name='Calibri', size=11, bold=True)
+            second_workshet['A25'].font = Font(name='Calibri', size=11, bold=True)
+            second_workshet['A26'].font = Font(name='Calibri', size=11, bold=True)
+            second_workshet['A27'].font = Font(name='Calibri', size=11, bold=True)
+            second_workshet['B20'].font = Font(name='Calibri', size=11, bold=True)
+            second_workshet['B21'].font = Font(name='Calibri', size=11, bold=True)
+            second_workshet['B22'].font = Font(name='Calibri', size=11, bold=True)
+            second_workshet['B16'].font = Font(name='Calibri', size=11, bold=True)
+            second_workshet['B22'].font = Font(name='Calibri', size=11, bold=True)
+            second_workshet['B23'].font = Font(name='Calibri', size=11, bold=True)
+            second_workshet['B24'].font = Font(name='Calibri', size=11, bold=True)
+            second_workshet['B25'].font = Font(name='Calibri', size=11, bold=True)
+            second_workshet['B26'].font = Font(name='Calibri', size=11, bold=True)
+            second_workshet['B27'].font = Font(name='Calibri', size=11, bold=True)
+
+
+
+            second_workshet['B1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            second_workshet['C1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            second_workshet['D1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            second_workshet['E1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            second_workshet['F1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            second_workshet['G1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            second_workshet['H1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            second_workshet['A16'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            second_workshet['B16'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            second_workshet['B17'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            second_workshet['B18'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            second_workshet['B20'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            second_workshet['B22'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            second_workshet['B25'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            second_workshet['B26'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            second_workshet['C17'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            second_workshet['C18'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            second_workshet['D17'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            second_workshet['D18'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+
+
+            five_workshet['A1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            five_workshet['B1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            five_workshet['C1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            five_workshet['D1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            five_workshet['E1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+
+
+            six_workshet['A1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            six_workshet['B1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            six_workshet['C1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            six_workshet['D1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            six_workshet['E1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            six_workshet['F1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            six_workshet['G1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            six_workshet['H1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            six_workshet['I1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            six_workshet['J1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            six_workshet['K1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            six_workshet['L1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            six_workshet['M1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            six_workshet['N1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            six_workshet['O1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            six_workshet['P1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            six_workshet['Q1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            six_workshet['R1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            six_workshet['S1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            six_workshet['T1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            six_workshet['A2'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            six_workshet['B2'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            six_workshet['C2'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            six_workshet['D2'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            six_workshet['E2'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            six_workshet['F2'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            six_workshet['G2'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            six_workshet['H2'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            six_workshet['I2'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            six_workshet['J2'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            six_workshet['K2'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            six_workshet['L2'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            six_workshet['M2'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            six_workshet['N2'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            six_workshet['O2'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            six_workshet['P2'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            six_workshet['Q2'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            six_workshet['R2'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            six_workshet['S2'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            six_workshet['T2'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+
+            seven_workshet['A1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            seven_workshet['B1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            seven_workshet['C1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            seven_workshet['D1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            seven_workshet['E1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            seven_workshet['F1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            seven_workshet['G1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            seven_workshet['H1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            seven_workshet['I1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            seven_workshet['J1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            seven_workshet['K1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            seven_workshet['L1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            seven_workshet['M1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            seven_workshet['N1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            seven_workshet['O1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            seven_workshet['P1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            seven_workshet['Q1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            seven_workshet['R1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            seven_workshet['S1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            seven_workshet['T1'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            seven_workshet['A2'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            seven_workshet['B2'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            seven_workshet['C2'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            seven_workshet['D2'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            seven_workshet['E2'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            seven_workshet['F2'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            seven_workshet['G2'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            seven_workshet['H2'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            seven_workshet['I2'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            seven_workshet['J2'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            seven_workshet['K2'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            seven_workshet['L2'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            seven_workshet['M2'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            seven_workshet['N2'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            seven_workshet['O2'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            seven_workshet['P2'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            seven_workshet['Q2'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            seven_workshet['R2'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            seven_workshet['S2'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+            seven_workshet['T2'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+
+
+
+    #Для прорисовки таблицы на листе ---===Показатели Надежности===---
+    for row in second_workshet['A17':'D18']:
+        for cell in row:
+            cell.border = thin_border
+
+    for row in five_workshet[f'A{count_as + 4}':f'D{count_as + 5}']:
+        for cell in row:
+            cell.border = thin_border
+
+    # Проверяем существование файла
+    # Проверяем существование файла
+    # if os.path.exists(save + '\\' + f'{name_company}' + '_ЕРО.xlsx'):
+
+    while True:
+        usa_present = input('Создать отчет ЕРО + слайд? - "y", Создать только отчет ЕРО - "n"): ').strip().lower()
+        if usa_present in ('y', 'n'):
+            break
+        print("Пожалуйста, введите 'y' для да или 'n' для нет.")
+
+
+    # Теперь usa_present гарантированно содержит 'y' или 'n'
+
+    if usa_present == 'y':
+        #=======================================================================================================================
+
+        #=============================================Генерация слайда из GigaCHAT===========================================================
+        # Словарь с API ключами
+
+
+        try:
+
+            dict_giga_reliz = {"ura_giga_api": ["4e41d892-18ed-427a-83c8-cd76cc5df693", "YWNhMzE5ZWUtYzdjOC00MjE0LTg0MWItMmU3ZGQ2NDQyYjcwOmJkYzY4OWY5LThkZDMtNDA2ZC05MGNjLTFmMTM3ODBjYzg3ZA=="],
+                               "rafail_giga_api": ["f3e39c44-940b-41bc-bc48-94705025d7de", "ZTQ5MTk2YzktYmNmYi00YjIwLThiNmEtMWFjMGZjZjljYWRlOjkzZTYwYmJiLTA1MmUtNGEyNy1iMzY4LWM2MzJhYTk3ZGEyZQ=="],
+                               "dima_giga_api": ["8c09c32a-c57a-4f7b-b396-855c12a2bdee", "NWU5ZWQ3YTgtN2UxNi00M2I4LTkwNGUtNDA2Y2QxNjBkZDUwOmQ2ODM5ZWVjLTNjMjctNDM3Ni05MTZjLWNjYzFkY2EyNzZhMw=="],
+                               "koly_giga_api": ["3f5d31ea-237f-43b9-b96a-0e49518cba18", "NGUzNGUyZGYtYmM5Ni00NTM5LTljMWYtMmFmOTJjZjIyMjVmOmI2YTQwY2E3LWIzM2ItNDM5Yi05Yjk3LTlhYTBkMzk5NmIyMA== "],
+                               "igor_giga_api": ["34c3aeb9-4211-4a11-ad49-2a151b3ca0c4", "OWRhNjc1ZTEtYmVkMS00MTk3LTkwYzgtNzE4Y2M2ZTYxNTNiOmNiZmIyOTg4LThjZGYtNGYxNy04NWFhLTA0MjYzOTVkOWI1Ng=="]}
+
+            # Выбираем случайную пару значений
+            random_key = random.choice(list(dict_giga_reliz.keys()))
+            rq_uid_value = dict_giga_reliz[random_key][0]
+            authorization_value = dict_giga_reliz[random_key][1]
+
+
+            url = "https://sm-auth-sd.prom-88-89-apps.ocp-geo.ocp.sigma.sbrf.ru/api/v2/oauth"
+            payload = {
+                'scope': 'GIGACHAT_API_PERS'
+            }
+            headers = {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Accept': 'application/json',
+                'RqUID': f'{rq_uid_value}',
+                'Authorization': f'Basic {authorization_value}'
+            }
+
+            response = requests.request("POST", url, headers=headers, data=payload, verify=False)
+
+            if response.status_code != 200:
+                # Выводим сообщение об ошибке, но НЕ прерываем выполнение
+                error_msg = f">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Закончились токены у пользователя: {random_key}.<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+                print(error_msg)  # Вывод в консоль
+                # Пропускаем текущую итерацию или используем fallback-логику
+                final_answer = ""
+
+            else:
+                response_data_keys = response.json()
+            # print(response_data_keys['access_token'])
+
+
+            url = "https://gigachat.devices.sberbank.ru/api/v1/chat/completions"
+
+            books_all_treb = []
+            for i, (key, values) in enumerate(result_my_dict.items(), start=1):
+                lm_otklon = ''.join(values[0])
+                uroven = ''.join(values[3])
+                if uroven == '3':
+                    books_all_treb.append(lm_otklon)
+
+
+            # Этап 1: Анализ отклонений
+            step1_payload = {
+                "model": "GigaChat",
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": f"Ты эксперт по ITSM процессам, поэтому тщательно проанализируй каждое отклонение из списка: {books_all_treb}."
+
+                    }
+                ]
+            }
+            step1_headers = {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': f'Bearer {response_data_keys["access_token"]}'
+            }
+            step1_response = requests.post(url, headers=step1_headers, data=json.dumps(step1_payload), verify=False)
+            step1_data = step1_response.json()
+            analysis_results = step1_data['choices'][0]['message']['content'].strip()
+
+            # Этап 2: Классификация отклонений
+            step2_payload = {
+                "model": "GigaChat",
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": f"Основываясь на анализе отклонений ({analysis_results}), классифицируй отклонения по важности выполнения."
+
+                    }
+                    ]
+                }
+            step2_response = requests.post(url, headers=step1_headers, data=json.dumps(step2_payload), verify=False)
+            step2_data = step2_response.json()
+            classification_results = step2_data['choices'][0]['message']['content'].strip()
+
+            # Этап 3: Выбор критичных отклонений
+            step3_payload = {
+                "model": "GigaChat",
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": f"Выпиши по одному самому критическому отклонению для каждого процесса из списка({classification_results}). "
+                                   f"Критерии отбора:\n"
+                                   f"- нарушение базовой функции процесса;\n"
+                                   f"- делает процесс нефункциональным;\n"
+                                   f"- критически влияет на безопасность/доступность ИТ-услуг.\n"
+                    }
+                ]
+            }
+            step3_response = requests.post(url, headers=step1_headers, data=json.dumps(step3_payload), verify=False)
+            step3_data = step3_response.json()
+            critical_deviations = step3_data['choices'][0]['message']['content'].strip()
+
+            # Этап 4: Формирование итоговых утверждений
+            step4_payload = {
+                "model": "GigaChat",
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": f"""
+                        Напечатайте список из ровно 5 критических отклонений, выбранных из списка {critical_deviations}, придерживаясь жёстких правил:
+
+                        
+                        Правила оформления:
+                        1. Никаких предварительных пояснений, заголовков ("Критические отклонения:", "Список критических отклонений:" и др.).
+                        2. Только чистые предложения, перечисляемые через "; ".
+                        3. Каждое предложение начинать с заглавной буквы.
+                        4. Без маркеров (-, •, *) и цифровых обозначений (1., 2.).
+                        5. Минимальная длина каждого отклонения — одно короткое предложение.
+                        
+                        Пример:  
+                        Нет учета рисков; Нет оценки показателей качества услуг; Нет резервного копирования; Нет автоматизации поддержки пользователей; Нет утвержденных стандартов  
+                        
+                        Если формат нарушен — ответ не засчитывается!
+                        """
+                            # f"Сформируй 5 независимых отклонений из {critical_deviations}, без описания  и пояснениячтобы каждое отклонение описывало одно фундаментальное нарушение в одном из процессов."
+                    }
+                ]
+            }
+            step4_response = requests.post(url, headers=step1_headers, data=json.dumps(step4_payload), verify=False)
+            step4_data = step4_response.json()
+            final_answer = step4_data['choices'][0]['message']['content'].strip()
+
+            # Пост-обработка для удаления начального дефиса (с пробелом или без)
+            if final_answer.startswith("- "):  # Сначала проверяем дефис с пробелом
+                final_answer = final_answer[2:]
+            elif final_answer.startswith("-"):  # Затем проверяем одиночный дефис
+                final_answer = final_answer[1:]
+
+            # print(final_answer)
+
+            # Очищаем от других нежелательных символов
+            final_answer = (
+                final_answer.replace('"', '')
+                    .replace('•', '')
+                    .replace('№', '')
+                    .replace('#', '')
+                    .strip()  # Убираем пробелы по краям
+            )
+            final_answer = re.sub(r'\([^)]*\)', '', final_answer)  # Удаление всего в скобках
+            final_answer = '; '.join([s.strip().capitalize() for s in final_answer.split(';')])
+
+        except Exception as e:
+            final_answer = ""
+
+
+        # jjj=input('++++++++')
+        # six_workshet['P2'] = output_string
+        # seven_workshet['P2'] = output_string
+
+        #============================================= !!!!!!КОНЕЦ Генерации из GigaCHAT!!!!!!!!!!!!!===========================================================
+
+
+        if os.path.exists(save):
+            k = f'{name_company}'
+            print(f"Файл '{k}' уже существует.")
+            # print(f"Файл '{save}'\Отчет_по_ITSM_AS.xlsx' уже существует.")
+            # Запрашиваем у пользователя, хочет ли он перезаписать файл
+            while True:
+                perazapis = input("Вы хотите перезаписать файл Отчет_по_ITSM_AS.xlsx? (y/n): ")
+                if perazapis == 'n':
+                    print(f"Файл '{k} не перезаписан.")
+                    break
+                elif perazapis == 'y':
+                    wb.save(save)
+                    print(f"Файл '{k} перезаписан.")
+                    print('=====  Отчет сформирован  =====')
+                    break
+                else:
+                    print("Неверный ответ. Пожалуйста, введите 'y' для перезаписи или 'n' для отказа.")
+        else:
+            wb.save(save)
+            print('=====  Отчет сформирован  =====')
+
+
+
+
+        #============================================ Начало Генерация слайда ======================================================================
+
+        print('====================================================================================================')
+        print('====================================================================================================')
+        print('******************************************')
+        print('Генерация слайда из ТЕПЛОВОЙ КАРТЫ')
+        print('******************************************')
+        #=======================================================================================================================
+
+        def apply_color_to_ppt(text_run, percent):
+            """Задаёт цвет текста в PowerPoint на основе процента."""
+            r = int(255 * (100 - percent) / 100)
+            g = int(255 * percent / 100)
+            text_run.font.color.rgb = RGBColor(r, g, 0)
+            text_run.font.bold = True
+
+        ws_two = Worksheet()
+        book_opros = {}
+        dict_assesment = {}
+        script_dir_all = os.path.abspath(os.path.dirname(__file__))
+        mas_files_list = []
+        keywords = ["Объединяющие элементы"]
+
+        file_list = glob.glob(os.path.join(script_dir_all, '*.xlsx'))
+        for file in file_list:
+            if any(keyword in file for keyword in keywords):
+                mas_files_list.append(file)
+
+        oprosnik_files = [file for file in mas_files_list if 'Объединяющие элементы' in file]
+        opros = os.path.join(os.path.dirname(__file__),  *oprosnik_files)
+
+        print()
+        print('-------- Формирую слайд --------')
+        print()
+        warnings.simplefilter("ignore")
+
+        ws_two.xlsx_to_dict(path=opros,  select_sheet='Объединяющие элементы', data_only=True)
