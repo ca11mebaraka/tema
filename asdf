@@ -1,0 +1,1500 @@
+# -*- coding: utf-8 -*-
+from pptx import Presentation
+from pptx.dml.color import RGBColor
+from pptx.util import Pt, Cm
+from pptx.chart.data import ChartData
+from pptx.enum.text import MSO_ANCHOR
+from PIL import Image
+from datetime import datetime
+import copy
+import random
+import requests
+import os
+from sheet2dict import Worksheet
+from collections import defaultdict
+from collections import Counter
+import pandas as pd
+import openpyxl
+from openpyxl import Workbook
+from openpyxl.styles import (
+    PatternFill, Border, Side,
+    Alignment, Font, GradientFill
+)
+from openpyxl.comments import Comment
+from openpyxl import load_workbook
+import warnings
+import glob
+import json
+from itertools import zip_longest
+import sys
+import re
+from openpyxl.worksheet.datavalidation import DataValidation
+from dateutil import parser
+
+
+
+print('====================================================================================================')
+print('Добрый день, скрипт автоматизации реестра отклонений по ITSM и АС готов к работе, выберите действие:')
+print('====================================================================================================')
+print('**************************************************************************************************************')
+print('Создание Анкет ИТ-услуг для оценки - введите цифру: 0 ')
+print('Генерация реестра - ITSM + АС или ITSM -  введите цифру: 1')
+print('Для подсчета ежеквартального инкремента после проведенного ЕОИТ в ДЗО начиная с - 2025г. - введите цифру: 2')
+# print('Динамика изменений по ITSM + АС - введите цифру: 2')
+# print('Генерация реестра - по АС введите цифру: 3')
+print('**************************************************************************************************************')
+
+# ==================================Общий обработчик ДАТ для 4-х вариантов ЕДК (OP, BO, MC/BC Critical) если они проставлены или вовсе не проставлены ===========================
+
+# Вывод текущего квартала и года
+def get_current_quarter():
+    now = datetime.now()
+    current_quarter = (now.month - 1) // 3 + 1
+    current_year = now.year
+    return f"{current_quarter}Q{current_year}"
+
+
+# Пример использования
+current_quarter = get_current_quarter()
+
+
+# ================================================
+
+# ====================Сравнение дат нужно для сравнение с текущей даты============================
+def extract_quarter_year(q_str):
+    """Извлекает квартал и год из строки формата 'QXYYYY'"""
+    quarter, year = q_str.split('Q')
+    return int(quarter), int(year)
+
+
+def find_future_quarters(current_q, all_quarters):
+    """Находит кварталы, которые больше текущего"""
+    try:
+        current_quarter, current_year = extract_quarter_year(current_q)
+        future_quarters = []
+
+        for q in all_quarters:
+            try:
+                quarter, year = extract_quarter_year(q)
+                if (year > current_year) or (year == current_year and quarter > current_quarter):
+                    future_quarters.append(q)
+            except ValueError as e:
+                print(f"Используется некорректная дата в ЕДК '{q}': {e}")
+                continue
+
+        return sorted(future_quarters)  # Возвращаем отсортированный список
+    except ValueError as e:
+        print(f"Ошибка обработки текущего квартала '{current_q}': {e}")
+        return []
+
+
+# ===============================================
+
+
+# Словарь для преобразования русских/английских месяцев
+MONTHS = {
+    'янв': 1, 'фев': 2, 'мар': 3, 'апр': 4, 'май': 5, 'июн': 6,
+    'июл': 7, 'авг': 8, 'сен': 9, 'окт': 10, 'ноя': 11, 'дек': 12,
+    'jan': 1, 'feb': 2, 'mar': 3, 'apr': 4, 'may': 5, 'jun': 6,
+    'jul': 7, 'aug': 8, 'sep': 9, 'oct': 10, 'nov': 11, 'dec': 12
+}
+
+
+def date_to_quarter_year(date_str):
+    date_str = date_str.strip().lower()
+
+    # Проверка на квартальные форматы (1кв.2025, q1 25, Q1'25)
+    quarter_match = re.match(r'(?:q|кв)(\d)[\'\s\.]*(\d{2,4})', date_str) or \
+                    re.match(r'(\d)\s*(?:кв|q)[\'\s\.]*(\d{2,4})', date_str) or \
+                    re.match(r'(\d)\s*квартал\s*(\d{4})', date_str) or \
+                    re.match(r'(\d{4})\s*(?:q|кв)\s*(\d)', date_str)  # 2025 q3
+
+    if quarter_match:
+        # Для формата "2025 q3" группы будут в другом порядке
+        if quarter_match.re.pattern == r'(\d{4})\s*(?:q|кв)\s*(\d)':
+            year = int(quarter_match.group(1))
+            quarter = int(quarter_match.group(2))
+        else:
+            quarter = int(quarter_match.group(1))
+            year = int(quarter_match.group(2))
+
+        return f"{quarter}Q{year if year >= 100 else year + 2000}"
+
+    # Проверка на текстовый месяц (июн.2025, Jun 2025, 15-июн-2025)
+    month_match = re.match(r'([а-яa-z]+)\.?\s*(\d{4})', date_str) or \
+                  re.match(r'(\d{1,2})-([а-яa-z]+)-(\d{4})', date_str) or \
+                  re.match(r'(\d{1,2})\s+([а-яa-z]+)\s+(\d{4})', date_str)
+
+    if month_match:
+        groups = month_match.groups()
+        if len(groups) == 2:  # формат "июн 2025"
+            month_str = groups[0][:3]
+            year = int(groups[1])
+        else:  # формат "15-июн-2025" или "15 июн 2025"
+            month_str = groups[1][:3]
+            year = int(groups[2])
+
+        if month_str in MONTHS:
+            quarter = (MONTHS[month_str] - 1) // 3 + 1
+            return f"{quarter}Q{year}"
+
+    # Парсинг обычных дат (31.03.2025, 2025-07-31 и др.)
+    try:
+        parsed_date = parser.parse(date_str, dayfirst=True)
+        quarter = (parsed_date.month - 1) // 3 + 1
+        return f"{quarter}Q{parsed_date.year}"
+    except ValueError:
+        return None  # Неизвестный формат
+
+
+def add_quarters(initial_date, quarters_to_add):
+    # Парсим входную строку (формат "1Q2025" или "Q12025")
+    if initial_date[0] == 'Q':  # формат Q12025
+        quarter = int(initial_date[1])
+        year = int(initial_date[2:])
+    else:  # формат 1Q2025
+        quarter = int(initial_date[0])
+        year = int(initial_date[2:])
+
+    # Вычисляем новые квартал и год
+    total_quarters = quarter + quarters_to_add - 1
+    new_year = year + total_quarters // 4
+    new_quarter = (total_quarters % 4) + 1
+
+    return f"{new_quarter}Q{new_year}"
+
+
+# =====================================================================================================================
+# ===============================================Выборка наименьшей даты из всех========================================================
+def find_min_quarter(result_mas):
+    min_year = float('inf')
+    min_quarter = float('inf')
+    min_quarter_str = None
+
+    for q in result_mas:
+        if q is None:  # Пропускаем None значения
+            continue
+
+        # Разбираем строку на квартал и год (поддерживаем оба формата: "2Q2025" и "Q22025")
+        try:
+            if 'Q' in q:
+                parts = q.split('Q')
+                if len(parts) == 2:
+                    # Формат "2Q2025"
+                    quarter = int(parts[0])
+                    year = int(parts[1])
+                else:
+                    # Формат "Q22025"
+                    quarter = int(q[1])
+                    year = int(q[2:])
+
+                # Сравниваем сначала год, потом квартал
+                if (year < min_year) or (year == min_year and quarter < min_quarter):
+                    min_year = year
+                    min_quarter = quarter
+                    min_quarter_str = f"{quarter}Q{year}"  # Сохраняем в едином формате
+        except (ValueError, IndexError, AttributeError):
+            continue  # Пропускаем некорректные строки
+
+    return min_quarter_str
+
+
+# Вызываем функцию и получаем минимальный квартал
+# min_quarter = find_min_quarter(result_mas)
+# print("Самый ранний квартал:", min_quarter)  # Выведет Q12025
+
+
+# ===============================================Концовка обработчика Дат========================================================
+
+dict_inn_company = {"9705118142":["Подразделения вне блоков B2C","Купер"],
+                    "9701048328":["Подразделения вне блоков B2C","МегаМаркет"],
+                    "7811554010":["Подразделения вне блоков B2C","Самокат"],
+                    "7736322345":["Подразделения вне блоков B2C","СберЛогистика"],
+                    "7730262964":["EdTech","СберОбразование"],
+                    "7736316133":["EdTech","Школа 21"],
+                    "7704865540":["E-Health","ЕАптека"],
+                    "9710011437":["E-Health","СберЗдоровье"],
+                    "9731065465":["E-Health","СберМедИИ"],
+                    "9705124940":["GR","СберПраво"],
+                    "7708328948":["Media & Ads","Звук"],
+                    "7801445445":["Media & Ads","Звук Бизнес"],
+                    "7814665871":["Media & Ads","ОККО"],
+                    "7725243282":["Media & Ads","Рамблер"],
+                    "7736319695":["Media & Ads","СберМаркетинг"],
+                    "7736659589":["ДРПА","АктивБизнесКонсалт"],
+                    "7736303529":["ДРПА","АктивБизнесТехнологии"],
+                    "7736581290":["ДРПА","Сбербанк Капитал"],
+                    "5405276278":["КИБ","2ГИС"],
+                    "7736641983":["КИБ","Деловая среда"],
+                    "9731062087":["КИБ","Дома"],
+                    "7714843760":["КИБ","Инсейлс"],
+                    "7709969870":["КИБ","Работа.ру"],
+                    "7707308480":["КИБ","Сбер А"],
+                    "7730269550":["КИБ","Сбер Бизнес Софт"],
+                    "7730241227":["КИБ","СберАналитика"],
+                    "7707009586":["КИБ","Сбербанк Лизинг"],
+                    "7802754982":["КИБ","Сбербанк Факторинг"],
+                    "7801392271":["КИБ","СберКорус"],
+                    "7709688816":["КИБ","СберРешения"],
+                    "7730262971":["КИБ","СберТаксФри"],
+                    "7736612855":["КИБ","Стратеджи Партнерс Групп"],
+                    "7727381792":["КИБ","Фьюэл-Ап"],
+                    "7730261382":["КИБ","Цифровые решения регионов"],
+                    "9709108748":["ЛК","Пульс"],
+                    "7736128605":["ЛК","СберУниверситет"],
+                    "7736249247":["Подразделения вне блоков B2C","ДомКлик"],
+                    "9709054813":["Подразделения вне блоков B2C","СберАвто"],
+                    "7736264044":["Подразделения вне блоков B2C","СберМобайл"],
+                    "7704314221":["Подразделения вне блоков B2C","Ситидрайв"],
+                    "9709078370":["Подразделения вне блоков B2C","Центр новых финансовых сервисов"],
+                    "7702770003":["Развитие клиентского опыта B2C","СберСпасибо"],
+                    "7710561081":["Риски","ОКБ"],
+                    "7736324991":["Сервисы","БАРУС"],
+                    "400014449":["Сервисы","Манжерок"],
+                    "7730245060":["Сервисы","Медэксперт Плюс"],
+                    "7729276546":["Сервисы","Московский городской Гольф Клуб"],
+                    "9103007830":["Сервисы","Мрия"],
+                    "7736663049":["Сервисы","СберСервис"],
+                    "7708229993":["Сервисы","СовТех"],
+                    "7720427871":["Сервисы","СТК"],
+                    "9709073460":["Сеть продаж","СберМегаМаркетРитейл"],
+                    "5024093941":["Строительство","Рублево-Архангельское"],
+                    "9731026963":["Строительство","Смарт Констракшн"],
+                    "6439098794":["Строительство","Инфотех Балаково"],
+                    "7736632467":["Технологии","Сбербанк-Технологии"],
+                    "7736279160":["Технологическое развитие","Cloud.ru"],
+                    "9725045830":["Технологическое развитие","АВТОТЕХ"],
+                    "7725745476":["Технологическое развитие","Живой Сайт"],
+                    "7730253720":["Технологическое развитие","СалютДевайсы"],
+                    "7805093681":["Технологическое развитие","ЦРТ"],
+                    "7727718421":["Транзакционный банкинг B2C","Расчетные решения"],
+                    "7750005860":["Транзакционный банкинг B2C","Расчетные решения НКО"],
+                    "9702027017":["Транзакционный банкинг B2C","СберТройка"],
+                    "9715225506":["Транзакционный банкинг B2C","Эвотор"],
+                    "7750005725":["Транзакционный банкинг B2C","Юмани"],
+                    "7725352740":["УБ","НПФ Сбербанка"],
+                    "9725000621":["УБ","Пенсионные решения"],
+                    "7736618039":["УБ","Рыночный Спецдепозитарий"],
+                    "7744002123":["УБ","Сбербанк страхование жизни СК"],
+                    "7706810747":["УБ","Сбербанк страхование СК"],
+                    "7730257675":["УБ","Современные Фонды Недвижимости"],
+                    "7706810730":["УБ","Страховой брокер Сбербанка"],
+                    "7710183778":["УБ","Управляющая компания Первая"],
+                    "7736252313":["ЦПНД","Цифровые технологии"]
+                    }
+
+
+
+
+
+
+automat_dzo = int(input())
+
+if automat_dzo == 0:
+    ws_itsm = Worksheet()
+    book_znanii_as = {}
+    print('!!! Чтобы сформировать анкеты по АС необходимо, чтобы "Анкета_объектов_оценки" находилась в общей папке(Опросник, База_знаний, папка AS)')
+    print()
+    script_dir = os.path.abspath(os.path.dirname(__file__))
+    # adress_as = os.path.join(script_dir, 'AS')
+    warnings.simplefilter("ignore")
+
+
+    file_list = glob.glob(os.path.join(script_dir, 'no_hand', '*.xlsx'))
+    mas_files_list = []
+    for file in file_list:
+        if 'Анкета_объектов' in file:
+            mas_files_list.append(file)
+            print('В папке найден файл Анкета_объектов_оценки:', *mas_files_list)
+            break
+    else:
+        print('В папке отсутствует файл Анкета_объектов_оценки, скрипт не сформирует АС анкеты для оценки !!!')
+        sys.exit()
+    itsm_rezult = os.path.join(os.path.dirname(__file__), *mas_files_list)
+    workbook_dtn = openpyxl.load_workbook(itsm_rezult)
+    sheet = workbook_dtn.active
+
+
+    # Ищем по всему Excel Колонку где имеется заголовок КОД!!!!=====================
+
+    code_cell = None
+    for row in sheet.iter_rows():
+        for cell in row:
+            if cell.value and "Код" in str(cell.value):
+                code_cell = cell
+                break
+        if code_cell:
+            break
+    if code_cell:
+        column_letter = code_cell.column_letter  # 'F'
+        row_number = code_cell.row               # 3
+        print(f"Буква столбца: {column_letter}, Номер строки: {row_number}")
+        # print(f"Ячейка с 'Код' найдена: {code_cell.coordinate}")  # Например, "F3"
+
+        first_column = sheet[f"{column_letter}"]
+        count_dtn_code = 0
+        for cell in first_column:
+            if cell.value != 'Код':
+                count_dtn_code += 1
+            else:
+                break
+
+        ws_itsm.xlsx_to_dict(path=itsm_rezult, select_sheet='Реестр объектов обследования', data_only=True, skiprows=count_dtn_code)
+    else:
+        print("Ячейка с 'Код' не найдена!")
+
+
+    for f in ws_itsm.sheet_items:
+        juice_znaniya_as = f.setdefault('Код')
+        juice_znaniya_type = f.setdefault('Тип объекта')
+        juice_znaniya_answer_as = f.setdefault('Название')
+        juice_znaniya_otklon_as = f.setdefault('Критичность сервиса')
+        juice_znaniya_recomend_as = f.setdefault('Описание')
+
+
+        #TODO: Добавление в словарь из базы знаний
+        book_znanii_as.setdefault(juice_znaniya_as, [])
+        book_znanii_as[juice_znaniya_as].append(juice_znaniya_type)
+        book_znanii_as[juice_znaniya_as].append(juice_znaniya_answer_as)
+        book_znanii_as[juice_znaniya_as].append(juice_znaniya_otklon_as)
+        book_znanii_as[juice_znaniya_as].append(juice_znaniya_recomend_as)
+
+
+    dtn_as_all = {}
+    for i, v in book_znanii_as.items():
+        if v[0] == 'Прикладной сервис':
+            if i not in dtn_as_all:
+                dtn_as_all[i] = []
+            dtn_as_all[i].append(v[1:])
+
+    real_name = input('Введите наименование компании: ')
+    real_block = input('Введите название блока: ')
+    real_exp_dtn = input('Эксперт по надежности (ДТН): ')
+    real_exp_dka = input('Куратор по архитектуре (ДКА): ')
+
+    def dtn_as(dtn_as_all, real_name, real_block, real_exp_dtn, real_exp_dka):
+        criticals = {'Office Productivity':'OP',
+                     'Business Operational':'BO',
+                     'Business Critical':'BC',
+                     'Mission Critical':'MC'}
+        path = os.path.join(os.path.dirname(__file__), "no_hand", "Анкета - ИТ-услуга.xlsx")
+        path_two = os.path.join(os.path.dirname(__file__), "no_hand", "Анкета - ИТ-для скрипта.xlsx")
+        real_path = os.path.join(os.path.dirname(__file__), "AS")
+
+        wb = openpyxl.load_workbook(path)
+        wb_two = openpyxl.load_workbook(path_two)
+        ws = wb["Характеристики ИТ-услуги"]
+        ws_techno = wb["Технологии"]
+        ws_techno_two = wb_two["Технологии"]
+        ws_tech = wb["Компоненты ИТ-услуги"]
+        ws_tech_two = wb_two["Компоненты ИТ-услуги"]
+
+        #В этом словаре добавлены диапазоны для ячеек колонки C (Лист "Технология") из листа "Справочники"
+
+        # validations = ws_techno.data_validations.dataValidation
+        # validation_dict = {v.sqref: v for v in validations}
+
+        mas_cell_tech = []
+        validations_tech = ws_tech_two.data_validations.dataValidation
+        validation_dict_tech = {str(v.sqref): v for v in validations_tech}
+        validation_dict_tech_new = {}
+        updated_validation_dict_tech = {}
+        for row in range(1, 25):
+            cell = f'A{row}'
+            mas_cell_tech.append(cell)
+
+        # Проходим по всем валидациям и добавляем каждую ячейку отдельно для Листа -----> Компоненты ИТ-услуги
+        for validation in validations_tech:
+            for i_cell in validation.cells:
+                if 'Справочники' in validation.formula1:
+                    validation_dict_tech_new[str(i_cell)] = validation
+
+        for key, value in validation_dict_tech_new.items():
+            # Извлекаем начальный и конечный индексы строки
+            start_new, end_new = key.split(':')
+            # Определяем первый индекс строки
+            first_index = int(start_new[1:])
+            # Создаем новый ключ как список ячеек
+            new_key = [f'{start_new[0]}{i}' for i in range(first_index, int(end_new[1:]) + 1)]
+            # Добавляем новое значение в словарь с новым ключом
+            updated_validation_dict_tech[tuple(new_key)] = value
+        all_cells_tech = set()
+        for cell in validation_dict_tech.keys():
+            if 'A' in cell:
+                all_cells_tech.add(cell)
+        result_techno = {', '.join(part.replace(':', ',') for part in item.split()) for item in all_cells_tech}
+
+        # Преобразуем множество в строку
+        result_techno_str = ','.join(result_techno)
+        start, end = result_techno_str.split(',')
+        # Определение минимального и максимального значений строк
+        start_row = int(start[1:])
+        end_row = int(end[1:])
+
+        # Формирование множества всех ячеек между минимальным и максимальным значением строки
+        cells_tech = {f'A{i}' for i in range(1, end_row + 1)}
+        cells_tech_l = {f'L{i}' for i in range(1, end_row + 1)}
+
+        for cell_address in cells_tech:
+            for keys, formulas in updated_validation_dict_tech.items():
+                if cell_address in keys and "Справочники" in formulas.formula1:
+                    key_formula = formulas.formula1
+                    cleaned_string = key_formula.replace('"', '')
+                    dv = DataValidation(type="list", formula1=cleaned_string, allow_blank=True)
+                    dv.add(ws_tech[cell_address])
+                    ws_tech.add_data_validation(dv)
+
+        for cell_address in cells_tech_l:
+            for keys, formulas in updated_validation_dict_tech.items():
+                if cell_address in keys and "Справочники" in formulas.formula1:
+                    key_formula = formulas.formula1
+                    cleaned_string = key_formula.replace('"', '')
+                    dv = DataValidation(type="list", formula1=cleaned_string, allow_blank=True)
+                    dv.add(ws_tech[cell_address])
+                    ws_tech.add_data_validation(dv)
+
+        #Для Листа Технологии
+
+        mas_cell = []
+        validations = ws_techno_two.data_validations.dataValidation
+        validation_dict = {str(v.sqref): v for v in validations}
+
+        for row in range(1, 115):
+            cell = f'C{row}'
+            mas_cell.append(cell)
+
+        # Проходим по всем валидациям и добавляем каждую ячейку отдельно для Листа Технологии
+        for validation in validations:
+            for i_cell in validation.cells:
+                if 'Справочники' in validation.formula1:
+                    validation_dict[str(i_cell)] = validation
+        all_cells = set()
+        for cell in validation_dict.keys():
+            if 'C' in cell:
+                all_cells.add(cell)
+        result = {', '.join(part.replace(':', ',') for part in item.split()) for item in all_cells}
+        #Итоговое множество всех элементов у которых имеется диапазон
+        results = set()
+        for item in result:
+            results.update(item.replace(' ', '').split(','))
+
+        # Создаем словарь, где ключи - уникальные адреса ячеек, а значения - списки допустимых адресов
+        validat = {}
+        for address in results:
+            if address not in validat:
+                validat[address] = [address]
+            else:
+                continue
+
+        for cell_address, valid_addresses in validat.items():
+            for keys, formulas in validation_dict.items():
+
+                if cell_address == keys and "Справочники" in formulas.formula1:
+                    key_formula = formulas.formula1
+                    cleaned_string = key_formula.replace('"', '')
+
+
+                    dv = DataValidation(type="list", formula1=cleaned_string, allow_blank=True)
+                    dv.add(ws_techno[cell_address])
+                    ws_techno.add_data_validation(dv)
+        # Получаем текущее время
+
+        # Извлекаем текущий год
+
+        for i, (key, values) in enumerate(dtn_as_all.items()):
+            ws['C2'].value = real_name
+            ws['C4'].value = datetime.now().year
+            ws['C5'].value = real_block
+            ws['C18'].value = real_exp_dtn
+            ws['C19'].value = real_exp_dka
+            ws['C3'].value = values[0][0]
+            ws['C6'].value = key
+            if values[0][1] in criticals:
+                ws['C7'].value = criticals[values[0][1]]
+            ws['C9'].value = values[0][2]
+
+            name_ass = re.sub(r'[\\/:*?"<>|]', '', values[0][0])
+            output_path = os.path.join(real_path, f'Анкета - ИТ-услуга-{name_ass}.xlsx')
+            # Сохраняем и ЗАКРЫВАЕМ файл
+            wb.save(output_path)
+            wb.close()  # Важно!
+
+
+    if __name__ == "__main__":
+        dtn_as(dtn_as_all, real_name, real_block, real_exp_dtn, real_exp_dka)
+#=======================================================================================================================
+if automat_dzo == 1:
+    ws = Worksheet()
+    ws_two = Worksheet()
+    ws_as = Worksheet()
+    print()
+
+    script_dir_all = os.path.abspath(os.path.dirname(__file__))
+    mas_files_list = []
+    keywords = ["Опросник", "База_знаний"]
+
+
+    file_list = glob.glob(os.path.join(script_dir_all, '*.xlsx'))
+    for file in file_list:
+        if any(keyword in file for keyword in keywords):
+            mas_files_list.append(file)
+
+
+    oprosnik_files = [file for file in mas_files_list if 'Опросник' in file]
+    baza_znaniy_files = [file for file in mas_files_list if 'База_знаний' in file]
+
+    baza = os.path.join(os.path.dirname(__file__), *baza_znaniy_files)
+    opros = os.path.join(os.path.dirname(__file__),   *oprosnik_files)
+    script_dir = os.path.abspath(os.path.dirname(__file__))
+    adress_as = os.path.join(script_dir, 'AS')
+    print()
+    print('-------- Формирую отчет --------')
+    print()
+    warnings.simplefilter("ignore")
+    ws.xlsx_to_dict(path=baza, select_sheet='База')
+
+
+    ws_two.xlsx_to_dict(path=opros,  select_sheet='Надёжность', skiprows=3, data_only=True)
+
+    def check_version(filepath):
+        workbook = openpyxl.load_workbook(filepath)
+        worksheet = workbook['Надёжность']
+        first_row = worksheet[1]
+        mas_ver_dtn = []
+        for cell in first_row:
+            if cell.value is not None:
+                mas_ver_dtn.append(cell.value)
+        # Получение ключа страховщика
+        insurer_key = next(item for item in mas_ver_dtn if item not in ['ОПРОСНИК\nпо оценке зрелости ITSM-процессов', 'версия опросника:'])
+
+        # Получение ключа версии опросника
+        pattern = r'\d+\.\d+\.\d+\.\d+\.\d+'
+        version_key = next(item for item in mas_ver_dtn if re.match(pattern, str(item)))
+        # Создание нового словаря
+        result = {
+            'ОПРОСНИК\nпо оценке зрелости ITSM-процессов': insurer_key,
+            'версия опросника:': version_key
+        }
+
+        expected_version = '6.1.'
+
+        if expected_version not in result['версия опросника:']:
+            print(f"Ожидаемая версия должна быть: {expected_version}, а в Опроснике используется версия: {result['версия опросника:']}. Работа скрипта прерывается.")
+            exit()
+
+    if __name__ == "__main__":
+        filepath = opros
+        check_version(filepath)
+
+    workbook_name = openpyxl.load_workbook(opros)
+    worksheet = workbook_name['Надёжность']
+    first_row = worksheet[1]
+    mas_ver_dtn = []
+    for cell in first_row:
+        if cell.value is not None:
+            mas_ver_dtn.append(cell.value)
+    # Получение ключа страховщика
+    insurer_key = next(item for item in mas_ver_dtn if item not in ['ОПРОСНИК\nпо оценке зрелости ITSM-процессов', 'версия опросника:'])
+    # Получение ключа версии опросника
+    pattern = r'\d+\.\d+\.\d+\.\d+\.\d+'
+    version_key = next(item for item in mas_ver_dtn if re.match(pattern, str(item)))
+    # Создание нового словаря
+    inn_index = mas_ver_dtn.index('ИНН:')
+    result = {
+        'ОПРОСНИК\nпо оценке зрелости ITSM-процессов': insurer_key,
+        'версия опросника:': version_key,
+        'ИНН:': mas_ver_dtn[inn_index + 1]
+    }
+
+    #Вытаскиваю критичность из Excel
+    second_row = worksheet[3]
+    mas_profile_dtn = []
+    for cell in second_row:
+        if cell.value is not None:
+            mas_profile_dtn.append(cell.value)
+
+    # Получение ключа страховщика
+    insurer_key_profile = next((item for item in mas_profile_dtn if item not in ['Каким максимальным уровнем критичности обладает ИТ-сервис в компании?', 'ФИО ответственного:']), None)
+
+    # Получение значения ФИО
+    fio_dtn = mas_profile_dtn[-1]
+    result_profile = {
+        'Каким максимальным уровнем критичности обладает ИТ-сервис в компании?': insurer_key_profile,
+        'ФИО ответственного:': fio_dtn
+    }
+
+
+    if result_profile['Каким максимальным уровнем критичности обладает ИТ-сервис в компании?'] not in ['Нет подобных ИТ-сервисов', 'OP', 'BO', 'BC и выше']:
+        print(f'В файле не указана критичность ИТ-сервис в компании, скрипт работать не будет!!!')
+        sys.exit()
+    else:
+
+        for k, v in dict_inn_company.items():
+            if str(result['ИНН:']) == k:
+                name_dtn = v[1]
+                name_company = v[1] + '_' +result_profile['Каким максимальным уровнем критичности обладает ИТ-сервис в компании?'] + '_ЕРО.xlsx'
+                name_coms = name_company.replace('"', '').replace('«', '').replace('»', '')  #Если в файле  Опросника название компании в кавычках «»
+                save = os.path.join(os.path.dirname(__file__), name_coms)
+                break
+
+            else:
+                name_dtn = result['ОПРОСНИК\nпо оценке зрелости ITSM-процессов']
+                name_company = result['ОПРОСНИК\nпо оценке зрелости ITSM-процессов'] + '_' +result_profile['Каким максимальным уровнем критичности обладает ИТ-сервис в компании?'] + '_ЕРО.xlsx'
+                name_coms = name_company.replace('"', '').replace('«', '').replace('»', '')  #Если в файле  Опросника название компании в кавычках «»
+                save = os.path.join(os.path.dirname(__file__), name_coms)
+
+
+        # name_company = result['ОПРОСНИК\nпо оценке зрелости ITSM-процессов'] + '_' +result_profile['Каким максимальным уровнем критичности обладает ИТ-сервис в компании?'] + '_ЕРО.xlsx'
+        # name_coms = name_company.replace('"', '').replace('«', '').replace('»', '')  #Если в файле  Опросника название компании в кавычках «»
+        # save = os.path.join(os.path.dirname(__file__), name_coms)
+
+
+
+    #TODO  Начало обработки по анкетам АС(ИТ-технология) если такая папка существует вообщем создаю функцию (2-функции: my_function, find_and_open_excel )
+    def my_function():
+        as_dict = {}
+        as_dict_norisk = {}
+        book_znanii_as = {}
+        script_dir = os.path.abspath(os.path.dirname(__file__))
+        adress_as = os.path.join(script_dir, 'AS')
+        ws_as.xlsx_to_dict(path=baza, select_sheet='База АС')
+        if not os.path.isdir(adress_as):
+            print(f'Папка {adress_as}  с анкетами по ИТ-услугам не найдена, продолжаю обработку по ITSM процессам  ')
+            return
+        else:
+            for filename in os.listdir(adress_as):
+                if filename.endswith(".xlsx"):
+                    file_path = os.path.join(adress_as, filename)
+                    try:
+                        wb = openpyxl.load_workbook(file_path, data_only=True)
+                        # print(f'Открываем файл - {filename}')
+                        ws = wb['Титульный']
+                        ws_new_as = wb['Технологии']
+                        print(f'Работаем с файлом - {filename} ---> АС - {ws["C4"].value}')
+
+                        if ws['C4'].value != 0:
+                            as_dict[ws['C4'].value] = []
+                            for row in range(2, ws_new_as.max_row + 1):
+                                value_a = ws_new_as.cell(row, 1).value  # Столбец A
+                                value_b = ws_new_as.cell(row, 3).value  # Столбец C
+                                value_d = ws_new_as.cell(row, 6).value  # Столбец F
+
+                                value_rekomend = ws_new_as.cell(row, 8).value
+
+                                # value_h = ws_new_as.cell(row, 8).value  # Столбец H
+                                value_e = ws_new_as.cell(row, 16).value  # Столбец P
+                                value_n = ws_new_as.cell(row, 14).value  # Столбец N
+                                value_ps = ws['C8'].value #Добавляем из Титульного листа "КОД ОБЪЕКТА ИССЛЕДОВАНИЯ"
+
+                                values = [value_a, value_b, value_d, value_e, value_ps, value_n, value_rekomend] #value_h,
+                                as_dict[ws['C4'].value].append(values)
+
+                        else:
+                            print(f'Не заполнено поле -- Название ИТ-услуги -- в файле {filename}  ')
+                            break
+                    except Exception as e:
+                        print(f"Ошибка при открытии файла '{file_path}': {e}")
+
+
+        for key, value in as_dict.items():
+            as_dict_norisk[key] = []
+            for sublist in value:
+                if not any(x in sublist for x in ['Нет риска', 'Нет отклонения']):
+                    if 'Неприменимо' not in sublist:
+                        if sublist[2] and sublist[3] != None:
+                            # if None not in sublist:
+                            as_dict_norisk[key].append(sublist)
+
+
+        for f in ws_as.sheet_items:
+
+            juice_znaniya_as = f.setdefault('Номер вопроса')
+            juice_znaniya_answer_as = f.setdefault('Ответ')
+            juice_znaniya_otklon_as = f.setdefault('Риск')
+            juice_znaniya_recomend_as = f.setdefault('Рекомендация')
+            # juice_critical_as = f.setdefault('Уровень критичности отклонения')
+
+            #TODO: Добавление в словарь из базы знаний
+            book_znanii_as.setdefault(juice_znaniya_as, [])
+            book_znanii_as[juice_znaniya_as].append(juice_znaniya_answer_as)
+            book_znanii_as[juice_znaniya_as].append(juice_znaniya_otklon_as)
+            book_znanii_as[juice_znaniya_as].append(juice_znaniya_recomend_as)
+            # book_znanii_as[juice_znaniya_as].append(juice_critical_as)
+
+        clean_book_as = {key: value for key, value in book_znanii_as.items() if key != 'x'}
+
+        dict_3 = {}
+        dict_tire = {} # Добавляем в этот словарь все значения убирая "-"(тире из Базы знаний)
+
+        for key_2, values_2 in as_dict_norisk.items():
+            for sublist_2 in values_2:
+
+                key_1 = str(sublist_2[0])
+                value_2 = str(sublist_2[1])
+                value_3 = sublist_2[1]
+                if key_1 in clean_book_as:
+                    for i, item in enumerate(clean_book_as[key_1]):
+                        if value_2 in item:
+                            description = clean_book_as[key_1][i + 1] if i + 1 < len(clean_book_as[key_1]) else ""  # Проверка границы
+                            recommendation = clean_book_as[key_1][i + 2] if i + 2 < len(clean_book_as[key_1]) else "" # Проверка границы
+
+                            if sublist_2[-1] == None:
+                                dict_3.setdefault(key_2, []).append([key_1, value_2, description, recommendation, sublist_2[2], sublist_2[3], sublist_2[4], sublist_2[5]])
+                            else:
+                                dict_3.setdefault(key_2, []).append([key_1, value_2, description, sublist_2[-1], sublist_2[2], sublist_2[3], sublist_2[4], sublist_2[5]])
+
+                        if (isinstance(value_3, (int, float)) and  (isinstance(item, str))):
+                            description = clean_book_as[key_1][i + 1] if i + 1 < len(clean_book_as[key_1]) else ""  # Проверка границы
+                            recommendation = clean_book_as[key_1][i + 2] if i + 2 < len(clean_book_as[key_1]) else "" # Проверка границы
+
+                            # dict_3.setdefault(key_2, []).append([key_1, value_2, description, recommendation, sublist_2[2], sublist_2[3], sublist_2[4], sublist_2[5]])
+                            if sublist_2[-1] == None:
+                                dict_3.setdefault(key_2, []).append([key_1, value_2, description, recommendation, sublist_2[2], sublist_2[3], sublist_2[4], sublist_2[5]])
+                            else:
+                                dict_3.setdefault(key_2, []).append([key_1, value_2, description, sublist_2[-1], sublist_2[2], sublist_2[3], sublist_2[4], sublist_2[5]])
+                            break
+
+        for key, value in dict_3.items():
+            new_value = []
+            for sublist in value:
+                new_sublist = []
+                for item in sublist:
+                    if isinstance(item, str) and ' — ' in item:
+                        parts = item.split(' — ')
+                        target_part = parts[1].capitalize()  # Сохранить нужную часть
+                        new_sublist.extend(parts)
+                        new_sublist[new_sublist.index(parts[1])] = target_part  # Заменить
+                    else:
+                        new_sublist.append(item)
+                new_value.append(new_sublist)
+            dict_tire[key] = new_value
+        #Меняем знаяения букв в словаре A, B, C
+        dict_kritik = {'A':'Критичный', 'B':'Высокий', 'C':'Умеренный'}
+
+        for key, value in dict_tire.items():
+            for sublist in value:
+                for i, item in enumerate(sublist):
+                    if item in dict_kritik:
+                        sublist[i] = dict_kritik[item]
+
+        return dict_tire
+    if __name__ == "__main__":
+        my_function()
+
+
+    def find_and_open_excel(adress_as):
+        as_dict = {}
+        if not os.path.isdir(adress_as):
+            print(f"Ошибка: папка '{adress_as}' не найдена.")
+            return
+        else:
+            mas_anketa = []
+            for filename in os.listdir(adress_as):
+                if filename.endswith(".xlsx"):
+                    mas_anketa.append(filename)
+
+            for anketa in mas_anketa:
+                file_path = os.path.join(adress_as, anketa)
+                # file_path = os.path.join(adress_as, (k for k in mas_anketa))
+                try:
+                    wb = openpyxl.load_workbook(file_path, data_only=True)
+                    # print(f'Открываем файл - {filename}')
+                    ws = wb['Титульный']
+                    print(f'Работаем с файлом - {anketa} ---> АС - {ws["C4"].value}')
+
+                    if ws['C4'].value != 0:
+                        try:
+                            as_dict[ws['C4'].value] = [ws['C5'].value, round(ws['D21'].value, 2), round(ws['F21'].value, 2)]
+                        except:
+                            as_dict[ws['C4'].value] = [ws['C5'].value, round(ws['D21'].value, 2), 0]
+
+                    else:
+                        print(f'Не заполненно поле -- Название ИТ-услуги -- в файле {anketa}  ')
+                        sys.exit()
+                except Exception as e:
+                    print(f"Ошибка при открытии файла '{file_path}': {e}")
+            # else:
+            #     print(f'В папке {adress_as} отсутствуют анкеты по ИТ-услугам, продолжаю обработку по ITSM процессам  ')
+            #     return
+
+        return as_dict
+    rezult_as = find_and_open_excel(adress_as)
+
+
+    # print(rezult_as)
+    # print(my_function())
+
+
+    # def my_vnd_as():
+    #     as_dict = {}
+    #     as_dict_norisk = {}
+    #     book_znanii_as_op = {}
+    #     book_znanii_as_bo = {}
+    #     book_znanii_as_bc = {}
+    #     book_znanii_as_mc = {}
+    #     counts_as = {}
+    #     script_dir = os.path.abspath(os.path.dirname(__file__))
+    #     adress_as = os.path.join(script_dir, 'AS')
+    #     ws_as.xlsx_to_dict(path=baza, select_sheet='База АС')
+    #     if not os.path.isdir(adress_as):
+    #         print(f'Папка {adress_as}  с анкетами по ИТ-услугам не найдена, продолжаю обработку по ITSM процессам  ')
+    #         return
+    #     else:
+    #         for filename in os.listdir(adress_as):
+    #             if filename.endswith(".xlsx"):
+    #                 file_path = os.path.join(adress_as, filename)
+    #                 try:
+    #                     wb = openpyxl.load_workbook(file_path, data_only=True)
+    #                     # print(f'Открываем файл - {filename}')
+    #                     ws = wb['Титульный']
+    #                     ws_new_as = wb['Технологии']
+    #
+    #
+    #                     if ws['C4'].value != 0:
+    #                         as_dict[ws['C4'].value] = []
+    #                         for row in range(2, ws_new_as.max_row + 1):
+    #                             value_a = ws_new_as.cell(row, 1).value  # Столбец A
+    #                             # value_b = ws_new_as.cell(row, 3).value  # Столбец C
+    #                             value_d = ws_new_as.cell(row, 6).value  # Столбец F
+    #                             # value_h = ws_new_as.cell(row, 8).value  # Столбец H
+    #                             # value_e = ws_new_as.cell(row, 16).value  # Столбец P
+    #                             # value_n = ws_new_as.cell(row, 14).value  # Столбец N
+    #                             value_ps = ws['C5'].value #Добавляем из Титульного листа "КОД ОБЪЕКТА ИССЛЕДОВАНИЯ"
+    #                             values = [value_ps, value_a, value_d]
+    #                             as_dict[ws['C4'].value].append(values)
+    #
+    #                     else:
+    #                         print(f'Не заполнено поле -- Название ИТ-услуги -- в файле {filename}  ')
+    #                         break
+    #                 except Exception as e:
+    #                     print(f"Ошибка при открытии файла '{file_path}': {e}")
+    #
+    #
+    #
+    #     # print(as_dict)
+    #     for k, v in as_dict.items():
+    #         # print(k, v[0][0])
+    #         if v[0][0] == 'OP':
+    #             for f in ws_as.sheet_items:
+    #                 juice_znaniya_as = f.setdefault('Коды для уровней отклонения')
+    #                 juice_znaniya_answer_as = f.setdefault('OP')
+    #                 juice_znaniya_otklon_as = f.setdefault('Уровень готовности надёжности OP')
+    #
+    #                 # Инициализация списка для ключа, если его еще нет
+    #                 if k not in book_znanii_as_op:
+    #                     book_znanii_as_op[k] = []
+    #                 # Добавление нового подсписка с тремя элементами
+    #                 book_znanii_as_op[k].append([
+    #                     juice_znaniya_as,
+    #                     juice_znaniya_answer_as,
+    #                     juice_znaniya_otklon_as
+    #                 ])
+    #         if v[0][0] == 'BO':
+    #             for f in ws_as.sheet_items:
+    #                 juice_znaniya_as = f.setdefault('Коды для уровней отклонения')
+    #                 juice_znaniya_answer_as = f.setdefault('BO')
+    #                 juice_znaniya_otklon_as = f.setdefault('Уровень готовности надёжности BO')
+    #
+    #                 # Инициализация списка для ключа, если его еще нет
+    #                 if k not in book_znanii_as_bo:
+    #                     book_znanii_as_bo[k] = []
+    #
+    #                 # Добавление нового подсписка с тремя элементами
+    #                 book_znanii_as_bo[k].append([
+    #                     juice_znaniya_as,
+    #                     juice_znaniya_answer_as,
+    #                     juice_znaniya_otklon_as
+    #                 ])
+    #
+    #
+    #
+    #     # Удаление пустых значений (если нужно)
+    #     for k in book_znanii_as_op:
+    #         book_znanii_as_op[k] = [item for item in book_znanii_as_op[k] if all(item)]
+    #     # Инициализация словаря для хранения результатов
+    #     result_dict = {}
+    #     # Проходим по каждому ключу в book_znanii_as_op
+    #     for key, value_list in book_znanii_as_op.items():
+    #         # Инициализация счетчиков для текущего ключа
+    #         result_dict[key] = {
+    #             'Критичный на 3:': [0, 0],  # [общее количество, выполнено]
+    #             'Высокий на 3:': [0, 0],
+    #             'Умеренный на 3:': [0, 0],
+    #             'Критичный на 4:': [0, 0],
+    #             'Высокий на 4:': [0, 0],
+    #             'Умеренный на 4:': [0, 0]
+    #         }
+    #
+    #         # Подсчет общего количества для каждого уровня и категории
+    #         for item in value_list:
+    #             code, category, level = item
+    #             result_key = f"{category} на {level}:"
+    #             if result_key in result_dict[key]:
+    #                 result_dict[key][result_key][0] += 1  # Увеличиваем общее количество
+    #
+    #         # Подсчет выполненных элементов из as_dict
+    #         if key in as_dict:
+    #             for as_item in as_dict[key]:
+    #                 if len(as_item) >= 3 and as_item[2] == 'Нет риска':
+    #                     code = as_item[1]
+    #                     # Ищем код в book_znanii_as_op
+    #                     for book_item in value_list:
+    #                         if str(book_item[0]) == str(code):
+    #                             category = book_item[1]
+    #                             level = book_item[2]
+    #                             result_key = f"{category} на {level}:"
+    #                             if result_key in result_dict[key]:
+    #                                 result_dict[key][result_key][1] += 1  # Увеличиваем количество выполненных
+    #
+    #     # Вывод результата
+    #     for key, value in result_dict.items():
+    #         print(f"{key}: {value}")
+    #
+    #
+    #     for key, values in as_dict.items():
+    #         for i, v in book_znanii_as_op.items():
+    #             if i == key:
+    #                 # counts_as[key] = {'Критичный': 0, 'Высокий': 0, 'Умеренный': 0}
+    #
+    #                 pass
+    #
+    #
+    #     return as_dict
+    # if __name__ == "__main__":
+    #     my_vnd_as()
+
+
+
+    # print(my_function())
+    counts_as = {}
+    for key, values in my_function().items():
+        for value in values:
+            risk_level = value[-4]
+            # print(risk_level)
+            if key not in counts_as:
+                counts_as[key] = {'Критичный': 0, 'Высокий': 0, 'Умеренный': 0}
+            counts_as[key][risk_level] += 1
+    # Словарь data_new выводит {'Address Processing': {'Критичный': 1, 'Высокий': 74, 'Умеренный': 10}}
+    # общее количество отклонений по требованию где стоит нет или нет ответа(None)!
+    data_new_count = {}
+    for key in counts_as:
+        data_new_count[key] = [rezult_as[key][0]]
+        data_new_count[key].extend(list(counts_as[key].values()))
+
+
+    #Функция нужна для подсчета всего требований по АС - это нужно для расчета Индекса и готовности 3-го и 4-го уровня надежности
+
+    def func_as_artefakt(adress_as):
+        new_result = {}
+        new_result_result_treb = {}
+
+        if not os.path.isdir(adress_as):
+            print(f"Ошибка: папка '{adress_as}' не найдена.")
+            return
+
+        for filename in os.listdir(adress_as):
+            if filename.endswith(".xlsx"):
+                file_path = os.path.join(adress_as, filename)
+                try:
+                    wb = openpyxl.load_workbook(file_path, data_only=True)
+                    ws = wb['Технологии']
+                    wm = wb['Титульный']
+                    new_result[wm['C4'].value] = []
+                    new_result_result_treb[wm['C4'].value] = []
+                    # Определяем диапазоны ячеек
+                    range_1 = 'E10:E18'
+                    range_3 = 'G10:G18'
+                    range_2 = 'F10:F18'
+                    range_4 = 'H10:H18'
+
+
+                    # Функция для получения списка значений из диапазона
+                    def get_values_from_range(wm, range_str):
+                        values = []
+                        for row in wm[range_str]:
+                            for cell in row:
+                                # Обрабатываем три случая: '-', None и другие значения
+                                if cell.value == '-' or cell.value is None:
+                                    values.append(0)
+                                else:
+                                    values.append(cell.value)
+                        return values
+                    # Получаем списки значений для обоих диапазонов
+                    values_1 = get_values_from_range(wm, range_1)
+                    values_2 = get_values_from_range(wm, range_3)
+                    values_3 = get_values_from_range(wm, range_2)
+                    values_4 = get_values_from_range(wm, range_4)
+                    # Суммы значений для диапазонов
+                    total_sum_1 = sum(values_1)
+                    total_sum_2 = sum(values_2)
+                    total_sum_3 = sum(values_3)
+                    total_sum_4 = sum(values_4)
+
+                    # Добавляем суммарные значения в результат
+                    new_result_result_treb[wm['C4'].value].append((
+                        total_sum_1, total_sum_3, total_sum_2, total_sum_4
+                    ))
+
+                except Exception as e:
+                    print(f"Произошла ошибка при обработке файла {filename}: {e}")
+
+        return new_result_result_treb
+    all_treb_as = func_as_artefakt(adress_as)
+
+    # print(all_treb_as) ## {'Address Processing': [(38.0, 2, 11.0, 1.5)]}
+    # print(data_new_count) ##{'Address Processing': ['BO', 0, 74, 10]}
+
+ #------------------------------------------------------------------------------------------------------------------
+
+
+    #Словари для Опросника и Знаний
+    book_opros = {}
+    book_znanii = {}
+
+    dict_itsm = {'ITSM-INC': 'Управление технологическими инцидентами',
+                 'ITSM-CATM': 'Управление каталогом сервисов',
+                 'ITSM-SLM': 'Управление уровнями сервисов',
+                 'ITSM-PRB': 'Управление технологическими проблемами',
+                 'ITSM-ERM': 'Управление технологическими рисками',
+                 'ITSM-ICHG': 'Управление инфраструктурными изменениями',
+                 'ITSM-CONT': 'Управление непрерывностью технологий',
+                 'ITSM-AVL': 'Управление доступностью технологий',
+                 'ITSM-M&E': 'Управление технологическими событиями и мониторингом',
+                 'ITSM-RFF': 'Управление технологическими запросами на обслуживание',
+                 'ITSM-CFG': 'Управление конфигурациями',
+                 'ITSM-UPD': 'Управление обновлением ПО',
+                 'ITSM-SD': 'Управление технологическими обращениями',
+                 'ITSM-CAP': 'Управление мощностями технологий',
+                 'ITSM-MNTW': 'Управление регламентными работами'
+                 }
+
+    dict_itsm_dtn = {'ITSM-CFG': '5492.CFG.',
+                     'ITSM-CATM': '5492.CATM.',
+                     'ITSM-SLM': '5492.SLM.',
+                     'ITSM-INC': '5492.INC.',
+                     'ITSM-PRB': '5492.PRB.',
+                     'ITSM-ERM': '5492.ERM.',
+                     'ITSM-RFF': '5492.RFF.',
+                     'ITSM-ICHG': '5492.ICHG.',
+                     'ITSM-UPD': '5492.UPD.',
+                     'ITSM-AVL': '5492.AVL.',
+                     'ITSM-CONT': '5492.CONT.',
+                     'ITSM-M&E': '5492.M&E.',
+                     'ITSM-CAP': '5492.CAP.',
+                     'ITSM-SD': '5492.SD.',
+                     'ITSM-MNTW': '5492.MNTW.'
+
+                     }
+    #TODO: Собираем информацию с Опросника согласно полям!
+    for b in ws_two.sheet_items:
+
+        juice_id = b.setdefault('ID\nвопроса')
+
+        juice_urov_ur_got = b.setdefault('Уровень готовности в зависимости от критичности АС')
+        juice_ur_otklon = b.setdefault('Уровень отклонения')
+        juice_answer = b.setdefault('Ответ с учётом артефакта \n(авто)')
+
+        book_opros.setdefault(juice_id, [])
+        book_opros[juice_id].append(juice_urov_ur_got)
+        book_opros[juice_id].append(juice_ur_otklon)
+        book_opros[juice_id].append(juice_answer)
+    removed_value = book_opros.pop('-')  # Удаляем ключ '-'
+
+    # ----- При парсинге Опросника если ключь ID Вопроса с ITSM то он мапит с добавлением префикса DTN- нужно для ЕРО в ЦТК-----
+    # Создаём новый словарь с нужными ключами
+    updated_book_opros = {}
+    for key, value in book_opros.items():
+        if not key.startswith('DTN-'):
+            new_key = 'DTN-' + key
+        else:
+            new_key = key
+        updated_book_opros[new_key] = value
+
+    # Перезаписываем исходный словарь (если нужно)
+    book_opros = updated_book_opros
+
+    #TODO: Собираем информацию с файла Базы знаний согласно полям!
+    for f in ws.sheet_items:
+
+        juice_znaniya = f.setdefault('Код вопроса')
+        juice_znaniya_otklon = f.setdefault('Выявленное отклонение')
+        juice_znaniya_posledstvie = f.setdefault('Негативные последствия от проявления отклонения')
+        juice_znaniya_recomend = f.setdefault('Рекомендации по устранению отклонения')
+        juice_artefakt = f.setdefault('Артефакт')
+
+        book_znanii.setdefault(juice_znaniya, [])
+        book_znanii[juice_znaniya].append([juice_znaniya_otklon])
+        book_znanii[juice_znaniya].append([juice_znaniya_posledstvie])
+        book_znanii[juice_znaniya].append([juice_znaniya_recomend + ' Aртeфaкт: ' + juice_artefakt])
+
+
+
+    # Создаем defaultdict, где значения по умолчанию — пустые словари
+    result_dicts = defaultdict(dict)
+    #Расчет по отклонениям в рамках каждого вопроса
+    prefixes = [
+        'ITSM-INC', 'ITSM-CATM', 'ITSM-CFG', 'ITSM-SLM', 'ITSM-PRB', 'ITSM-ERM',
+        'ITSM-RFF', 'ITSM-ICHG', 'ITSM-UPD', 'ITSM-AVL', 'ITSM-M&E', 'ITSM-CONT',
+        'ITSM-CAP', 'ITSM-SD', 'ITSM-MNTW']
+
+
+    for key, value in book_opros.items():
+        if value[0] != 'ЦТК':
+            for prefix in prefixes:
+                if prefix in key:
+                    result_dicts[prefix][key] = value
+                    break
+
+    # Теперь у нас есть словари для каждого префикса
+    dict_inc = result_dicts['ITSM-INC']
+    dict_catm = result_dicts['ITSM-CATM']
+    dict_cfg = result_dicts['ITSM-CFG']
+    dict_slm = result_dicts['ITSM-SLM']
+    dict_prb = result_dicts['ITSM-PRB']
+    dict_erm = result_dicts['ITSM-ERM']
+    dict_rff = result_dicts['ITSM-RFF']
+    dict_ichg = result_dicts['ITSM-ICHG']
+    dict_upd = result_dicts['ITSM-UPD']
+    dict_avl = result_dicts['ITSM-AVL']
+    dict_me = result_dicts['ITSM-M&E']
+    dict_cont = result_dicts['ITSM-CONT']
+    dict_cap = result_dicts['ITSM-CAP']
+    dict_mntw = result_dicts['ITSM-MNTW']
+    dict_sd = result_dicts['ITSM-SD']
+
+
+    # dict_tree_four_assesment_itsm = {
+    #     'Всего критичных': 0,
+    #     'Выполнено критичных': 0,
+    #     'Всего высоких': 0,
+    #     'Выполнено высоких': 0,
+    #     'Всего умеренных': 0,
+    #     'Выполнено умеренных': 0,
+    # }
+    #
+    # for i, d in result_dicts.items():
+    #     for k, v in d.items():
+    #         if '3' in v and 'Критичный' in v:
+    #             dict_tree_four_assesment_itsm['Всего критичных'] += 1
+    #         if '3' in v and 'Критичный' in v and 'да' in v:
+    #             dict_tree_four_assesment_itsm['Выполнено критичных'] += 1
+    #         if '3' in v and 'Высокий' in v:
+    #             dict_tree_four_assesment_itsm['Всего высоких'] += 1
+    #         if '3' in v and 'Высокий' in v and 'да' in v:
+    #             dict_tree_four_assesment_itsm['Выполнено высоких'] += 1
+    #         if '3' in v and 'Умеренный' in v:
+    #             dict_tree_four_assesment_itsm['Всего умеренных'] += 1
+    #         if '3' in v and 'Умеренный' in v and 'да' in v:
+    #             dict_tree_four_assesment_itsm['Выполнено умеренных'] += 1
+            # if '4' in v and 'Критичный' in v:
+            #     dict_tree_four_assesment_itsm['Всего критичных'] += 1
+            # if '4' in v and 'Критичный' in v and 'да' in v:
+            #     dict_tree_four_assesment_itsm['Выполнено критичных'] += 1
+            # if '4' in v and 'Высокий' in v:
+            #     dict_tree_four_assesment_itsm['Всего высоких'] += 1
+            # if '4' in v and 'Высокий' in v and 'да' in v:
+            #     dict_tree_four_assesment_itsm['Выполнено высоких'] += 1
+            # if '4' in v and 'Умеренный' in v:
+            #     dict_tree_four_assesment_itsm['Всего умеренных'] += 1
+            # if '4' in v and 'Умеренный' in v and 'да' in v:
+            #     dict_tree_four_assesment_itsm['Выполнено умеренных'] += 1
+
+    #Собираем массив с теми отклонениями которые получили ИТОГОВЫЙ ответ "НЕТ" нужны для формирования информации из базы знаний
+    dict_all_answer_no = []
+
+    dict_inc_vnd = {'ITSM-INC': {'Всего требований': 0,
+                                 'Всего требований на 3': 0,
+                                 'Всего выполнено требований на 3': 0,
+                                 'Всего требований на 4': 0,
+                                 'Всего выполнено требований на 4': 0}}
+
+    dict_catm_vnd = {'ITSM-CATM': {'Всего требований': 0,
+                                   'Всего требований на 3': 0,
+                                   'Всего выполнено требований на 3': 0,
+                                   'Всего требований на 4': 0,
+                                   'Всего выполнено требований на 4': 0}}
+
+    dict_cfg_vnd = {'ITSM-CFG': {'Всего требований': 0,
+                                 'Всего требований на 3': 0,
+                                 'Всего выполнено требований на 3': 0,
+                                 'Всего требований на 4': 0,
+                                 'Всего выполнено требований на 4': 0}}
+
+
+    dict_slm_vnd = {'ITSM-SLM': {'Всего требований': 0,
+                                 'Всего требований на 3': 0,
+                                 'Всего выполнено требований на 3': 0,
+                                 'Всего требований на 4': 0,
+                                 'Всего выполнено требований на 4': 0}}
+
+    dict_prb_vnd = {'ITSM-PRB': {'Всего требований': 0,
+                                 'Всего требований на 3': 0,
+                                 'Всего выполнено требований на 3': 0,
+                                 'Всего требований на 4': 0,
+                                 'Всего выполнено требований на 4': 0}}
+
+
+    dict_erm_vnd = {'ITSM-ERM': {'Всего требований': 0,
+                                 'Всего требований на 3': 0,
+                                 'Всего выполнено требований на 3': 0,
+                                 'Всего требований на 4': 0,
+                                 'Всего выполнено требований на 4': 0}}
+
+
+    dict_rff_vnd = {'ITSM-RFF': {'Всего требований': 0,
+                                 'Всего требований на 3': 0,
+                                 'Всего выполнено требований на 3': 0,
+                                 'Всего требований на 4': 0,
+                                 'Всего выполнено требований на 4': 0}}
+
+    dict_ichg_vnd = {'ITSM-ICHG': {'Всего требований': 0,
+                                   'Всего требований на 3': 0,
+                                   'Всего выполнено требований на 3': 0,
+                                   'Всего требований на 4': 0,
+                                   'Всего выполнено требований на 4': 0}}
+
+    dict_upd_vnd = {'ITSM-UPD': {'Всего требований': 0,
+                                 'Всего требований на 3': 0,
+                                 'Всего выполнено требований на 3': 0,
+                                 'Всего требований на 4': 0,
+                                 'Всего выполнено требований на 4': 0}}
+
+
+    dict_avl_vnd = {'ITSM-AVL': {'Всего требований': 0,
+                                 'Всего требований на 3': 0,
+                                 'Всего выполнено требований на 3': 0,
+                                 'Всего требований на 4': 0,
+                                 'Всего выполнено требований на 4': 0}}
+
+
+    dict_me_vnd = {'ITSM-M&E': {'Всего требований': 0,
+                               'Всего требований на 3': 0,
+                               'Всего выполнено требований на 3': 0,
+                               'Всего требований на 4': 0,
+                               'Всего выполнено требований на 4': 0}}
+
+    dict_cont_vnd = {'ITSM-CONT': {'Всего требований': 0,
+                                   'Всего требований на 3': 0,
+                                   'Всего выполнено требований на 3': 0,
+                                   'Всего требований на 4': 0,
+                                   'Всего выполнено требований на 4': 0}}
+
+    dict_cap_vnd = {'ITSM-CAP': {'Всего требований': 0,
+                                 'Всего требований на 3': 0,
+                                 'Всего выполнено требований на 3': 0,
+                                 'Всего требований на 4': 0,
+                                 'Всего выполнено требований на 4': 0}}
+
+    dict_sd_vnd = {'ITSM-SD': {'Всего требований': 0,
+                               'Всего требований на 3': 0,
+                               'Всего выполнено требований на 3': 0,
+                               'Всего требований на 4': 0,
+                               'Всего выполнено требований на 4': 0}}
+
+    dict_mntw_vnd = {'ITSM-MNTW': {'Всего требований': 0,
+                                   'Всего требований на 3': 0,
+                                   'Всего выполнено требований на 3': 0,
+                                   'Всего требований на 4': 0,
+                                   'Всего выполнено требований на 4': 0}}
+
+
+    # ********************************************** ITSM-INC ********************************************************************
+    # Расчет требований по процессу inc для 3-го уровня готовности
+    for k, v in dict_inc.items():
+        if v[2] == 'нет':
+            dict_all_answer_no.append(k)
+        if v[0] == '3':
+            dict_inc_vnd['ITSM-INC']['Всего требований на 3'] += 1
+        if v[0] == '4':
+            dict_inc_vnd['ITSM-INC']['Всего требований на 4'] += 1
+        if v[2] == 'да' and v[0] == '3':
+            dict_inc_vnd['ITSM-INC']['Всего выполнено требований на 3'] += 1
+        if v[2] == 'да' and v[0] == '4':
+            dict_inc_vnd['ITSM-INC']['Всего выполнено требований на 4'] += 1
+    dict_inc_vnd['ITSM-INC']['Всего требований'] = dict_inc_vnd['ITSM-INC']['Всего требований на 3'] + dict_inc_vnd['ITSM-INC']['Всего требований на 4']
+
+
+    # ********************************************** ITSM-CATM ********************************************************************
+    # Расчет требований по процессу CATM для 3-го уровня готовности
+    for k, v in dict_catm.items():
+        if v[2] == 'нет':
+            dict_all_answer_no.append(k)
+        if v[0] == '3':
+            dict_catm_vnd['ITSM-CATM']['Всего требований на 3'] += 1
+        if v[0] == '4':
+            dict_catm_vnd['ITSM-CATM']['Всего требований на 4'] += 1
+        if v[2] == 'да' and v[0] == '3':
+            dict_catm_vnd['ITSM-CATM']['Всего выполнено требований на 3'] += 1
+        if v[2] == 'да' and v[0] == '4':
+            dict_catm_vnd['ITSM-CATM']['Всего выполнено требований на 4'] += 1
+    dict_catm_vnd['ITSM-CATM']['Всего требований'] = dict_catm_vnd['ITSM-CATM']['Всего требований на 3'] + dict_catm_vnd['ITSM-CATM']['Всего требований на 4']
+
+
+    # ********************************************** ITSM-CFG ********************************************************************
+    # Расчет требований по процессу inc для 3-го уровня готовности
+    for k, v in dict_cfg.items():
+        if v[2] == 'нет':
+            dict_all_answer_no.append(k)
+        if v[0] == '3':
+            dict_cfg_vnd['ITSM-CFG']['Всего требований на 3'] += 1
+        if v[0] == '4':
+            dict_cfg_vnd['ITSM-CFG']['Всего требований на 4'] += 1
+        if v[2] == 'да' and v[0] == '3':
+            dict_cfg_vnd['ITSM-CFG']['Всего выполнено требований на 3'] += 1
+        if v[2] == 'да' and v[0] == '4':
+            dict_cfg_vnd['ITSM-CFG']['Всего выполнено требований на 4'] += 1
+    dict_cfg_vnd['ITSM-CFG']['Всего требований'] = dict_cfg_vnd['ITSM-CFG']['Всего требований на 3'] + dict_cfg_vnd['ITSM-CFG']['Всего требований на 4']
+
+
+    # ********************************************** ITSM-SLM ********************************************************************
+    # Расчет требований по процессу inc для 3-го уровня готовности
+    for k, v in dict_slm.items():
+        if v[2] == 'нет':
+            dict_all_answer_no.append(k)
+        if v[0] == '3':
+            dict_slm_vnd['ITSM-SLM']['Всего требований на 3'] += 1
+        if v[0] == '4':
+            dict_slm_vnd['ITSM-SLM']['Всего требований на 4'] += 1
+        if v[2] == 'да' and v[0] == '3':
+            dict_slm_vnd['ITSM-SLM']['Всего выполнено требований на 3'] += 1
+        if v[2] == 'да' and v[0] == '4':
+            dict_slm_vnd['ITSM-SLM']['Всего выполнено требований на 4'] += 1
+    dict_slm_vnd['ITSM-SLM']['Всего требований'] = dict_slm_vnd['ITSM-SLM']['Всего требований на 3'] + dict_slm_vnd['ITSM-SLM']['Всего требований на 4']
+
+
+    # ********************************************** ITSM-PRB ********************************************************************
+    # Расчет требований по процессу inc для 3-го уровня готовности
+    for k, v in dict_prb.items():
+        if v[2] == 'нет':
+            dict_all_answer_no.append(k)
+        if v[0] == '3':
+            dict_prb_vnd['ITSM-PRB']['Всего требований на 3'] += 1
+        if v[0] == '4':
+            dict_prb_vnd['ITSM-PRB']['Всего требований на 4'] += 1
+        if v[2] == 'да' and v[0] == '3':
+            dict_prb_vnd['ITSM-PRB']['Всего выполнено требований на 3'] += 1
+        if v[2] == 'да' and v[0] == '4':
+            dict_prb_vnd['ITSM-PRB']['Всего выполнено требований на 4'] += 1
+    dict_prb_vnd['ITSM-PRB']['Всего требований'] = dict_prb_vnd['ITSM-PRB']['Всего требований на 3'] + dict_prb_vnd['ITSM-PRB']['Всего требований на 4']
+
+
+    # ********************************************** ITSM-ERM ********************************************************************
+    # Расчет требований по процессу inc для 3-го уровня готовности
+    for k, v in dict_erm.items():
+        if v[2] == 'нет':
+            dict_all_answer_no.append(k)
+        if v[0] == '3':
+            dict_erm_vnd['ITSM-ERM']['Всего требований на 3'] += 1
+        if v[0] == '4':
+            dict_erm_vnd['ITSM-ERM']['Всего требований на 4'] += 1
+        if v[2] == 'да' and v[0] == '3':
+            dict_erm_vnd['ITSM-ERM']['Всего выполнено требований на 3'] += 1
+        if v[2] == 'да' and v[0] == '4':
+            dict_erm_vnd['ITSM-ERM']['Всего выполнено требований на 4'] += 1
+    dict_erm_vnd['ITSM-ERM']['Всего требований'] = dict_erm_vnd['ITSM-ERM']['Всего требований на 3'] + dict_erm_vnd['ITSM-ERM']['Всего требований на 4']
+
+
+    # ********************************************** ITSM-RFF ********************************************************************
+    # Расчет требований по процессу inc для 3-го уровня готовности
+    for k, v in dict_rff.items():
+        if v[2] == 'нет':
+            dict_all_answer_no.append(k)
+        if v[0] == '3':
+            dict_rff_vnd['ITSM-RFF']['Всего требований на 3'] += 1
+        if v[0] == '4':
+            dict_rff_vnd['ITSM-RFF']['Всего требований на 4'] += 1
+        if v[2] == 'да' and v[0] == '3':
+            dict_rff_vnd['ITSM-RFF']['Всего выполнено требований на 3'] += 1
+        if v[2] == 'да' and v[0] == '4':
+            dict_rff_vnd['ITSM-RFF']['Всего выполнено требований на 4'] += 1
+    dict_rff_vnd['ITSM-RFF']['Всего требований'] = dict_rff_vnd['ITSM-RFF']['Всего требований на 3'] + dict_rff_vnd['ITSM-RFF']['Всего требований на 4']
+
+
+    # ********************************************** ITSM-ICHG ********************************************************************
+    # Расчет требований по процессу inc для 3-го уровня готовности
+    for k, v in dict_ichg.items():
+        if v[2] == 'нет':
+            dict_all_answer_no.append(k)
+        if v[0] == '3':
+            dict_ichg_vnd['ITSM-ICHG']['Всего требований на 3'] += 1
+        if v[0] == '4':
+            dict_ichg_vnd['ITSM-ICHG']['Всего требований на 4'] += 1
+        if v[2] == 'да' and v[0] == '3':
+            dict_ichg_vnd['ITSM-ICHG']['Всего выполнено требований на 3'] += 1
+        if v[2] == 'да' and v[0] == '4':
+            dict_ichg_vnd['ITSM-ICHG']['Всего выполнено требований на 4'] += 1
+    dict_ichg_vnd['ITSM-ICHG']['Всего требований'] = dict_ichg_vnd['ITSM-ICHG']['Всего требований на 3'] + dict_ichg_vnd['ITSM-ICHG']['Всего требований на 4']
+
+
+    # ********************************************** ITSM-UPD ********************************************************************
+    # Расчет требований по процессу inc для 3-го уровня готовности
+    for k, v in dict_upd.items():
+        if v[2] == 'нет':
+            dict_all_answer_no.append(k)
+        if v[0] == '3':
+            dict_upd_vnd['ITSM-UPD']['Всего требований на 3'] += 1
+        if v[0] == '4':
+            dict_upd_vnd['ITSM-UPD']['Всего требований на 4'] += 1
+        if v[2] == 'да' and v[0] == '3':
+            dict_upd_vnd['ITSM-UPD']['Всего выполнено требований на 3'] += 1
+        if v[2] == 'да' and v[0] == '4':
+            dict_upd_vnd['ITSM-UPD']['Всего выполнено требований на 4'] += 1
+    dict_upd_vnd['ITSM-UPD']['Всего требований'] = dict_upd_vnd['ITSM-UPD']['Всего требований на 3'] + dict_upd_vnd['ITSM-UPD']['Всего требований на 4']
+
+
+    # ********************************************** ITSM-AVL ********************************************************************
+    # Расчет требований по процессу inc для 3-го уровня готовности
+    for k, v in dict_avl.items():
+        if v[2] == 'нет':
+            dict_all_answer_no.append(k)
+        if v[0] == '3':
+            dict_avl_vnd['ITSM-AVL']['Всего требований на 3'] += 1
+        if v[0] == '4':
+            dict_avl_vnd['ITSM-AVL']['Всего требований на 4'] += 1
+        if v[2] == 'да' and v[0] == '3':
+            dict_avl_vnd['ITSM-AVL']['Всего выполнено требований на 3'] += 1
+        if v[2] == 'да' and v[0] == '4':
+            dict_avl_vnd['ITSM-AVL']['Всего выполнено требований на 4'] += 1
+    dict_avl_vnd['ITSM-AVL']['Всего требований'] = dict_avl_vnd['ITSM-AVL']['Всего требований на 3'] + dict_avl_vnd['ITSM-AVL']['Всего требований на 4']
+
+
+    # ********************************************** ITSM-M&E ********************************************************************
+    # Расчет требований по процессу inc для 3-го уровня готовности
+    for k, v in dict_me.items():
+        if v[2] == 'нет':
+            dict_all_answer_no.append(k)
+        if v[0] == '3':
+            dict_me_vnd['ITSM-M&E']['Всего требований на 3'] += 1
+        if v[0] == '4':
+            dict_me_vnd['ITSM-M&E']['Всего требований на 4'] += 1
+        if v[2] == 'да' and v[0] == '3':
+            dict_me_vnd['ITSM-M&E']['Всего выполнено требований на 3'] += 1
+        if v[2] == 'да' and v[0] == '4':
+            dict_me_vnd['ITSM-M&E']['Всего выполнено требований на 4'] += 1
+    dict_me_vnd['ITSM-M&E']['Всего требований'] = dict_me_vnd['ITSM-M&E']['Всего требований на 3'] + dict_me_vnd['ITSM-M&E']['Всего требований на 4']
+
+
+    # ********************************************** ITSM-CONT ********************************************************************
+    # Расчет требований по процессу inc для 3-го уровня готовности
+    for k, v in dict_cont.items():
+        if v[2] == 'нет':
+            dict_all_answer_no.append(k)
+        if v[0] == '3':
+            dict_cont_vnd['ITSM-CONT']['Всего требований на 3'] += 1
+        if v[0] == '4':
+            dict_cont_vnd['ITSM-CONT']['Всего требований на 4'] += 1
+        if v[2] == 'да' and v[0] == '3':
+            dict_cont_vnd['ITSM-CONT']['Всего выполнено требований на 3'] += 1
+        if v[2] == 'да' and v[0] == '4':
+            dict_cont_vnd['ITSM-CONT']['Всего выполнено требований на 4'] += 1
+    dict_cont_vnd['ITSM-CONT']['Всего требований'] = dict_cont_vnd['ITSM-CONT']['Всего требований на 3'] + dict_cont_vnd['ITSM-CONT']['Всего требований на 4']
+
+
+    # ********************************************** ITSM-CAP ********************************************************************
+    # Расчет требований по процессу inc для 3-го уровня готовности
+    for k, v in dict_cap.items():
+        if v[2] == 'нет':
+            dict_all_answer_no.append(k)
+        if v[0] == '3':
+            dict_cap_vnd['ITSM-CAP']['Всего требований на 3'] += 1
+        if v[0] == '4':
