@@ -1,0 +1,1500 @@
+
+    # Удаляем дубликаты через set(), затем сортируем
+    unique_quarters = list(set(future_quarters))  # Оставляем только уникальные значения
+    sorted_quarters = sorted(unique_quarters, key=sort_key)
+
+
+    # ==============================================================================
+
+
+
+    # Теперь у нас есть словари для каждого префикса взятого из ОПРОСНИКА
+    dict_inc = result_dicts['ITSM-INC']
+    dict_inc_edk = result_dicts_edk['ITSM-INC']
+    dict_catm = result_dicts['ITSM-CATM']
+    dict_catm_edk = result_dicts_edk['ITSM-CATM']
+    dict_cfg = result_dicts['ITSM-CFG']
+    dict_cfg_edk = result_dicts_edk['ITSM-CFG']
+    dict_slm = result_dicts['ITSM-SLM']
+    dict_slm_edk = result_dicts_edk['ITSM-SLM']
+    dict_prb = result_dicts['ITSM-PRB']
+    dict_prb_edk = result_dicts_edk['ITSM-PRB']
+    dict_erm = result_dicts['ITSM-ERM']
+    dict_erm_edk = result_dicts_edk['ITSM-ERM']
+    dict_rff = result_dicts['ITSM-RFF']
+    dict_rff_edk = result_dicts_edk['ITSM-RFF']
+    dict_ichg = result_dicts['ITSM-ICHG']
+    dict_ichg_edk = result_dicts_edk['ITSM-ICHG']
+    dict_upd = result_dicts['ITSM-UPD']
+    dict_upd_edk = result_dicts_edk['ITSM-UPD']
+    dict_avl = result_dicts['ITSM-AVL']
+    dict_avl_edk = result_dicts_edk['ITSM-AVL']
+    dict_me = result_dicts['ITSM-M&E']
+    dict_me_edk = result_dicts_edk['ITSM-M&E']
+    dict_cont = result_dicts['ITSM-CONT']
+    dict_cont_edk = result_dicts_edk['ITSM-CONT']
+    dict_cap = result_dicts['ITSM-CAP']
+    dict_cap_edk = result_dicts_edk['ITSM-CAP']
+    dict_mntw = result_dicts['ITSM-MNTW']
+    dict_mntw_edk = result_dicts_edk['ITSM-MNTW']
+    dict_sd = result_dicts['ITSM-SD']
+    dict_sd_edk = result_dicts_edk['ITSM-SD']
+
+    #Собираем массив с теми отклонениями которые получили ИТОГОВЫЙ ответ "НЕТ" нужны для формирования информации из базы знаний
+    dict_all_answer_no = []
+
+    dict_inc_vnd = {'ITSM-INC': {'Всего требований': 0,
+                                 'Всего требований на 3': 0,
+                                 'Всего выполнено требований на 3': 0,
+                                 'Всего требований на 4': 0,
+                                 'Всего выполнено требований на 4': 0}}
+
+    dict_catm_vnd = {'ITSM-CATM': {'Всего требований': 0,
+                                   'Всего требований на 3': 0,
+                                   'Всего выполнено требований на 3': 0,
+                                   'Всего требований на 4': 0,
+                                   'Всего выполнено требований на 4': 0}}
+
+    dict_cfg_vnd = {'ITSM-CFG': {'Всего требований': 0,
+                                 'Всего требований на 3': 0,
+                                 'Всего выполнено требований на 3': 0,
+                                 'Всего требований на 4': 0,
+                                 'Всего выполнено требований на 4': 0}}
+
+
+    dict_slm_vnd = {'ITSM-SLM': {'Всего требований': 0,
+                                 'Всего требований на 3': 0,
+                                 'Всего выполнено требований на 3': 0,
+                                 'Всего требований на 4': 0,
+                                 'Всего выполнено требований на 4': 0}}
+
+    dict_prb_vnd = {'ITSM-PRB': {'Всего требований': 0,
+                                 'Всего требований на 3': 0,
+                                 'Всего выполнено требований на 3': 0,
+                                 'Всего требований на 4': 0,
+                                 'Всего выполнено требований на 4': 0}}
+
+
+    dict_erm_vnd = {'ITSM-ERM': {'Всего требований': 0,
+                                 'Всего требований на 3': 0,
+                                 'Всего выполнено требований на 3': 0,
+                                 'Всего требований на 4': 0,
+                                 'Всего выполнено требований на 4': 0}}
+
+
+    dict_rff_vnd = {'ITSM-RFF': {'Всего требований': 0,
+                                 'Всего требований на 3': 0,
+                                 'Всего выполнено требований на 3': 0,
+                                 'Всего требований на 4': 0,
+                                 'Всего выполнено требований на 4': 0}}
+
+    dict_ichg_vnd = {'ITSM-ICHG': {'Всего требований': 0,
+                                   'Всего требований на 3': 0,
+                                   'Всего выполнено требований на 3': 0,
+                                   'Всего требований на 4': 0,
+                                   'Всего выполнено требований на 4': 0}}
+
+    dict_upd_vnd = {'ITSM-UPD': {'Всего требований': 0,
+                                 'Всего требований на 3': 0,
+                                 'Всего выполнено требований на 3': 0,
+                                 'Всего требований на 4': 0,
+                                 'Всего выполнено требований на 4': 0}}
+
+
+    dict_avl_vnd = {'ITSM-AVL': {'Всего требований': 0,
+                                 'Всего требований на 3': 0,
+                                 'Всего выполнено требований на 3': 0,
+                                 'Всего требований на 4': 0,
+                                 'Всего выполнено требований на 4': 0}}
+
+
+    dict_me_vnd = {'ITSM-M&E': {'Всего требований': 0,
+                                'Всего требований на 3': 0,
+                                'Всего выполнено требований на 3': 0,
+                                'Всего требований на 4': 0,
+                                'Всего выполнено требований на 4': 0}}
+
+    dict_cont_vnd = {'ITSM-CONT': {'Всего требований': 0,
+                                   'Всего требований на 3': 0,
+                                   'Всего выполнено требований на 3': 0,
+                                   'Всего требований на 4': 0,
+                                   'Всего выполнено требований на 4': 0}}
+
+    dict_cap_vnd = {'ITSM-CAP': {'Всего требований': 0,
+                                 'Всего требований на 3': 0,
+                                 'Всего выполнено требований на 3': 0,
+                                 'Всего требований на 4': 0,
+                                 'Всего выполнено требований на 4': 0}}
+
+    dict_sd_vnd = {'ITSM-SD': {'Всего требований': 0,
+                               'Всего требований на 3': 0,
+                               'Всего выполнено требований на 3': 0,
+                               'Всего требований на 4': 0,
+                               'Всего выполнено требований на 4': 0}}
+
+    dict_mntw_vnd = {'ITSM-MNTW': {'Всего требований': 0,
+                                   'Всего требований на 3': 0,
+                                   'Всего выполнено требований на 3': 0,
+                                   'Всего требований на 4': 0,
+                                   'Всего выполнено требований на 4': 0}}
+
+
+
+
+    # ********************************************** ITSM-INC ********************************************************************
+
+    for k, v in dict_inc.items():
+        if k in dict_inc_edk:
+
+            if '(ПАО) Устранено - подтверждено ПАО' in dict_inc_edk[k][11] or '(ПАО) Исключение из реестра - подтверждено ПАО' in dict_inc_edk[k][11]:
+                dict_inc[k][2] = 'да'
+        if v[0] == '3':
+            dict_inc_vnd['ITSM-INC']['Всего требований на 3'] += 1
+        if v[0] == '3' and v[2] == 'да':
+            dict_inc_vnd['ITSM-INC']['Всего выполнено требований на 3'] += 1
+        if v[0] == '4':
+            dict_inc_vnd['ITSM-INC']['Всего требований на 4'] += 1
+        if v[0] == '4' and v[2] == 'да':
+            dict_inc_vnd['ITSM-INC']['Всего выполнено требований на 4'] += 1
+
+    dict_inc_vnd['ITSM-INC']['Всего требований'] = dict_inc_vnd['ITSM-INC']['Всего требований на 3'] + dict_inc_vnd['ITSM-INC']['Всего требований на 4']
+
+    # ********************************************** ITSM-CATM ********************************************************************
+
+    for k, v in dict_catm.items():
+        if k in dict_catm_edk:
+            if '(ПАО) Устранено - подтверждено ПАО' in dict_catm_edk[k][11] or '(ПАО) Исключение из реестра - подтверждено ПАО' in dict_catm_edk[k][11]:
+                dict_catm[k][2] = 'да'
+        if v[0] == '3':
+            dict_catm_vnd['ITSM-CATM']['Всего требований на 3'] += 1
+        if v[0] == '3' and v[2] == 'да':
+            dict_catm_vnd['ITSM-CATM']['Всего выполнено требований на 3'] += 1
+        if v[0] == '4':
+            dict_catm_vnd['ITSM-CATM']['Всего требований на 4'] += 1
+        if v[0] == '4' and v[2] == 'да':
+            dict_catm_vnd['ITSM-CATM']['Всего выполнено требований на 4'] += 1
+
+    dict_catm_vnd['ITSM-CATM']['Всего требований'] = dict_catm_vnd['ITSM-CATM']['Всего требований на 3'] + dict_catm_vnd['ITSM-CATM']['Всего требований на 4']
+
+    # ********************************************** ITSM-CFG ********************************************************************
+
+    for k, v in dict_cfg.items():
+        if k in dict_cfg_edk:
+            if '(ПАО) Устранено - подтверждено ПАО' in dict_cfg_edk[k][11] or '(ПАО) Исключение из реестра - подтверждено ПАО' in dict_cfg_edk[k][11]:
+                dict_cfg[k][2] = 'да'
+        if v[0] == '3':
+            dict_cfg_vnd['ITSM-CFG']['Всего требований на 3'] += 1
+        if v[0] == '3' and v[2] == 'да':
+            dict_cfg_vnd['ITSM-CFG']['Всего выполнено требований на 3'] += 1
+        if v[0] == '4':
+            dict_cfg_vnd['ITSM-CFG']['Всего требований на 4'] += 1
+        if v[0] == '4' and v[2] == 'да':
+            dict_cfg_vnd['ITSM-CFG']['Всего выполнено требований на 4'] += 1
+
+    dict_cfg_vnd['ITSM-CFG']['Всего требований'] = dict_cfg_vnd['ITSM-CFG']['Всего требований на 3'] + dict_cfg_vnd['ITSM-CFG']['Всего требований на 4']
+
+    # ********************************************** ITSM-SLM ********************************************************************
+
+    for k, v in dict_slm.items():
+        if k in dict_slm_edk:
+            if '(ПАО) Устранено - подтверждено ПАО' in dict_slm_edk[k][11] or '(ПАО) Исключение из реестра - подтверждено ПАО' in dict_slm_edk[k][11]:
+                dict_slm[k][2] = 'да'
+        if v[0] == '3':
+            dict_slm_vnd['ITSM-SLM']['Всего требований на 3'] += 1
+        if v[0] == '3' and v[2] == 'да':
+            dict_slm_vnd['ITSM-SLM']['Всего выполнено требований на 3'] += 1
+        if v[0] == '4':
+            dict_slm_vnd['ITSM-SLM']['Всего требований на 4'] += 1
+        if v[0] == '4' and v[2] == 'да':
+            dict_slm_vnd['ITSM-SLM']['Всего выполнено требований на 4'] += 1
+
+    dict_slm_vnd['ITSM-SLM']['Всего требований'] = dict_slm_vnd['ITSM-SLM']['Всего требований на 3'] + dict_slm_vnd['ITSM-SLM']['Всего требований на 4']
+
+    # ********************************************** ITSM-PRB ********************************************************************
+
+    for k, v in dict_prb.items():
+        if k in dict_prb_edk:
+            if '(ПАО) Устранено - подтверждено ПАО' in dict_prb_edk[k][11] or '(ПАО) Исключение из реестра - подтверждено ПАО' in dict_prb_edk[k][11]:
+                dict_prb[k][2] = 'да'
+        if v[0] == '3':
+            dict_prb_vnd['ITSM-PRB']['Всего требований на 3'] += 1
+        if v[0] == '3' and v[2] == 'да':
+            dict_prb_vnd['ITSM-PRB']['Всего выполнено требований на 3'] += 1
+        if v[0] == '4':
+            dict_prb_vnd['ITSM-PRB']['Всего требований на 4'] += 1
+        if v[0] == '4' and v[2] == 'да':
+            dict_prb_vnd['ITSM-PRB']['Всего выполнено требований на 4'] += 1
+
+    dict_prb_vnd['ITSM-PRB']['Всего требований'] = dict_prb_vnd['ITSM-PRB']['Всего требований на 3'] + dict_prb_vnd['ITSM-PRB']['Всего требований на 4']
+
+    # ********************************************** ITSM-ERM ********************************************************************
+    for k, v in dict_erm.items():
+        if k in dict_erm_edk:
+            if '(ПАО) Устранено - подтверждено ПАО' in dict_erm_edk[k][11] or '(ПАО) Исключение из реестра - подтверждено ПАО' in dict_erm_edk[k][11]:
+                dict_erm[k][2] = 'да'
+        if v[0] == '3':
+            dict_erm_vnd['ITSM-ERM']['Всего требований на 3'] += 1
+        if v[0] == '3' and v[2] == 'да':
+            dict_erm_vnd['ITSM-ERM']['Всего выполнено требований на 3'] += 1
+        if v[0] == '4':
+            dict_erm_vnd['ITSM-ERM']['Всего требований на 4'] += 1
+        if v[0] == '4' and v[2] == 'да':
+            dict_erm_vnd['ITSM-ERM']['Всего выполнено требований на 4'] += 1
+
+    dict_erm_vnd['ITSM-ERM']['Всего требований'] = dict_erm_vnd['ITSM-ERM']['Всего требований на 3'] + dict_erm_vnd['ITSM-ERM']['Всего требований на 4']
+
+    # ********************************************** ITSM-RFF ********************************************************************
+    for k, v in dict_rff.items():
+        if k in dict_rff_edk:
+            if '(ПАО) Устранено - подтверждено ПАО' in dict_rff_edk[k][11] or '(ПАО) Исключение из реестра - подтверждено ПАО' in dict_rff_edk[k][11]:
+                dict_rff[k][2] = 'да'
+        if v[0] == '3':
+            dict_rff_vnd['ITSM-RFF']['Всего требований на 3'] += 1
+        if v[0] == '3' and v[2] == 'да':
+            dict_rff_vnd['ITSM-RFF']['Всего выполнено требований на 3'] += 1
+        if v[0] == '4':
+            dict_rff_vnd['ITSM-RFF']['Всего требований на 4'] += 1
+        if v[0] == '4' and v[2] == 'да':
+            dict_rff_vnd['ITSM-RFF']['Всего выполнено требований на 4'] += 1
+
+    dict_rff_vnd['ITSM-RFF']['Всего требований'] = dict_rff_vnd['ITSM-RFF']['Всего требований на 3'] + dict_rff_vnd['ITSM-RFF']['Всего требований на 4']
+
+    # ********************************************** ITSM-ICHG ********************************************************************
+    for k, v in dict_ichg.items():
+        if k in dict_ichg_edk:
+            if '(ПАО) Устранено - подтверждено ПАО' in dict_ichg_edk[k][11] or '(ПАО) Исключение из реестра - подтверждено ПАО' in dict_ichg_edk[k][11]:
+                dict_ichg[k][2] = 'да'
+        if v[0] == '3':
+            dict_ichg_vnd['ITSM-ICHG']['Всего требований на 3'] += 1
+        if v[0] == '3' and v[2] == 'да':
+            dict_ichg_vnd['ITSM-ICHG']['Всего выполнено требований на 3'] += 1
+        if v[0] == '4':
+            dict_ichg_vnd['ITSM-ICHG']['Всего требований на 4'] += 1
+        if v[0] == '4' and v[2] == 'да':
+            dict_ichg_vnd['ITSM-ICHG']['Всего выполнено требований на 4'] += 1
+
+    dict_ichg_vnd['ITSM-ICHG']['Всего требований'] = dict_ichg_vnd['ITSM-ICHG']['Всего требований на 3'] + dict_ichg_vnd['ITSM-ICHG']['Всего требований на 4']
+
+    # ********************************************** ITSM-UPD ********************************************************************
+
+    for k, v in dict_upd.items():
+        if k in dict_upd_edk:
+            if '(ПАО) Устранено - подтверждено ПАО' in dict_upd_edk[k][11] or '(ПАО) Исключение из реестра - подтверждено ПАО' in dict_upd_edk[k][11]:
+                dict_upd[k][2] = 'да'
+        if v[0] == '3':
+            dict_upd_vnd['ITSM-UPD']['Всего требований на 3'] += 1
+        if v[0] == '3' and v[2] == 'да':
+            dict_upd_vnd['ITSM-UPD']['Всего выполнено требований на 3'] += 1
+        if v[0] == '4':
+            dict_upd_vnd['ITSM-UPD']['Всего требований на 4'] += 1
+        if v[0] == '4' and v[2] == 'да':
+            dict_upd_vnd['ITSM-UPD']['Всего выполнено требований на 4'] += 1
+
+    dict_upd_vnd['ITSM-UPD']['Всего требований'] = dict_upd_vnd['ITSM-UPD']['Всего требований на 3'] + dict_upd_vnd['ITSM-UPD']['Всего требований на 4']
+
+    # ********************************************** ITSM-AVL ********************************************************************
+    for k, v in dict_avl.items():
+        if k in dict_avl_edk:
+            if '(ПАО) Устранено - подтверждено ПАО' in dict_avl_edk[k][11] or '(ПАО) Исключение из реестра - подтверждено ПАО' in dict_avl_edk[k][11]:
+                dict_avl[k][2] = 'да'
+        if v[0] == '3':
+            dict_avl_vnd['ITSM-AVL']['Всего требований на 3'] += 1
+        if v[0] == '3' and v[2] == 'да':
+            dict_avl_vnd['ITSM-AVL']['Всего выполнено требований на 3'] += 1
+        if v[0] == '4':
+            dict_avl_vnd['ITSM-AVL']['Всего требований на 4'] += 1
+        if v[0] == '4' and v[2] == 'да':
+            dict_avl_vnd['ITSM-AVL']['Всего выполнено требований на 4'] += 1
+
+    dict_avl_vnd['ITSM-AVL']['Всего требований'] = dict_avl_vnd['ITSM-AVL']['Всего требований на 3'] + dict_avl_vnd['ITSM-AVL']['Всего требований на 4']
+
+    # ********************************************** ITSM-M&E ********************************************************************
+    for k, v in dict_me.items():
+        if k in dict_me_edk:
+            if '(ПАО) Устранено - подтверждено ПАО' in dict_me_edk[k][11] or '(ПАО) Исключение из реестра - подтверждено ПАО' in dict_me_edk[k][11]:
+                dict_me[k][2] = 'да'
+        if v[0] == '3':
+            dict_me_vnd['ITSM-M&E']['Всего требований на 3'] += 1
+        if v[0] == '3' and v[2] == 'да':
+            dict_me_vnd['ITSM-M&E']['Всего выполнено требований на 3'] += 1
+        if v[0] == '4':
+            dict_me_vnd['ITSM-M&E']['Всего требований на 4'] += 1
+        if v[0] == '4' and v[2] == 'да':
+            dict_me_vnd['ITSM-M&E']['Всего выполнено требований на 4'] += 1
+
+    dict_me_vnd['ITSM-M&E']['Всего требований'] = dict_me_vnd['ITSM-M&E']['Всего требований на 3'] + dict_me_vnd['ITSM-M&E']['Всего требований на 4']
+
+    # ********************************************** ITSM-CONT ********************************************************************
+    for k, v in dict_cont.items():
+        if k in dict_cont_edk:
+            if '(ПАО) Устранено - подтверждено ПАО' in dict_cont_edk[k][11] or '(ПАО) Исключение из реестра - подтверждено ПАО' in dict_cont_edk[k][11]:
+                dict_cont[k][2] = 'да'
+        if v[0] == '3':
+            dict_cont_vnd['ITSM-CONT']['Всего требований на 3'] += 1
+        if v[0] == '3' and v[2] == 'да':
+            dict_cont_vnd['ITSM-CONT']['Всего выполнено требований на 3'] += 1
+        if v[0] == '4':
+            dict_cont_vnd['ITSM-CONT']['Всего требований на 4'] += 1
+        if v[0] == '4' and v[2] == 'да':
+            dict_cont_vnd['ITSM-CONT']['Всего выполнено требований на 4'] += 1
+
+    dict_cont_vnd['ITSM-CONT']['Всего требований'] = dict_cont_vnd['ITSM-CONT']['Всего требований на 3'] + dict_cont_vnd['ITSM-CONT']['Всего требований на 4']
+
+    # ********************************************** ITSM-CAP ********************************************************************
+    for k, v in dict_cap.items():
+        if k in dict_cap_edk:
+            if '(ПАО) Устранено - подтверждено ПАО' in dict_cap_edk[k][11] or '(ПАО) Исключение из реестра - подтверждено ПАО' in dict_cap_edk[k][11]:
+                dict_cap[k][2] = 'да'
+        if v[0] == '3':
+            dict_cap_vnd['ITSM-CAP']['Всего требований на 3'] += 1
+        if v[0] == '3' and v[2] == 'да':
+            dict_cap_vnd['ITSM-CAP']['Всего выполнено требований на 3'] += 1
+        if v[0] == '4':
+            dict_cap_vnd['ITSM-CAP']['Всего требований на 4'] += 1
+        if v[0] == '4' and v[2] == 'да':
+            dict_cap_vnd['ITSM-CAP']['Всего выполнено требований на 4'] += 1
+
+    dict_cap_vnd['ITSM-CAP']['Всего требований'] = dict_cap_vnd['ITSM-CAP']['Всего требований на 3'] + dict_cap_vnd['ITSM-CAP']['Всего требований на 4']
+
+    # ********************************************** ITSM-MNTW ********************************************************************
+    for k, v in dict_mntw.items():
+        if k in dict_mntw_edk:
+            if '(ПАО) Устранено - подтверждено ПАО' in dict_mntw_edk[k][11] or '(ПАО) Исключение из реестра - подтверждено ПАО' in dict_mntw_edk[k][11]:
+                dict_mntw[k][2] = 'да'
+        if v[0] == '3':
+            dict_mntw_vnd['ITSM-MNTW']['Всего требований на 3'] += 1
+        if v[0] == '3' and v[2] == 'да':
+            dict_mntw_vnd['ITSM-MNTW']['Всего выполнено требований на 3'] += 1
+        if v[0] == '4':
+            dict_mntw_vnd['ITSM-MNTW']['Всего требований на 4'] += 1
+        if v[0] == '4' and v[2] == 'да':
+            dict_mntw_vnd['ITSM-MNTW']['Всего выполнено требований на 4'] += 1
+
+    dict_mntw_vnd['ITSM-MNTW']['Всего требований'] = dict_mntw_vnd['ITSM-MNTW']['Всего требований на 3'] + dict_mntw_vnd['ITSM-MNTW']['Всего требований на 4']
+
+    # ********************************************** ITSM-SD ********************************************************************
+    for k, v in dict_sd.items():
+        if k in dict_sd_edk:
+            if '(ПАО) Устранено - подтверждено ПАО' in dict_sd_edk[k][11] or '(ПАО) Исключение из реестра - подтверждено ПАО' in dict_sd_edk[k][11]:
+                dict_sd[k][2] = 'да'
+        if v[0] == '3':
+            dict_sd_vnd['ITSM-SD']['Всего требований на 3'] += 1
+        if v[0] == '3' and v[2] == 'да':
+            dict_sd_vnd['ITSM-SD']['Всего выполнено требований на 3'] += 1
+        if v[0] == '4':
+            dict_sd_vnd['ITSM-SD']['Всего требований на 4'] += 1
+        if v[0] == '4' and v[2] == 'да':
+            dict_sd_vnd['ITSM-SD']['Всего выполнено требований на 4'] += 1
+
+    dict_sd_vnd['ITSM-SD']['Всего требований'] = dict_sd_vnd['ITSM-SD']['Всего требований на 3'] + dict_sd_vnd['ITSM-SD']['Всего требований на 4']
+
+    # *********************************************************************************************************************************************
+
+    # Все словари в переменной result_dicts_itsm
+    result_dicts_itsm = {'ITSM-INC': dict_inc,
+                         'ITSM-CATM': dict_catm,
+                         'ITSM-CFG': dict_cfg,
+                         'ITSM-SLM': dict_slm,
+                         'ITSM-PRB': dict_prb,
+                         'ITSM-ERM': dict_erm,
+                         'ITSM-RFF': dict_rff,
+                         'ITSM-ICHG': dict_ichg,
+                         'ITSM-UPD': dict_upd,
+                         'ITSM-AVL': dict_avl,
+                         'ITSM-M&E': dict_me,
+                         'ITSM-CONT': dict_cont,
+                         'ITSM-CAP': dict_cap,
+                         'ITSM-MNTW': dict_mntw,
+                         'ITSM-SD': dict_sd
+                         }
+
+    # Объединяем все словари в один
+    combined_dict = {}
+    for key, value in result_dicts_itsm.items():
+        combined_dict.update(value)
+
+    # Создаем пустой словарь для хранения результатов
+        # Создаем новый словарь, который будет объединять все словари - нужно для вывода на листе Надежности
+        combined_dict_all_proc = {}
+        combined_dict_all_proc.update(dict_inc_vnd)
+        combined_dict_all_proc.update(dict_catm_vnd)
+        combined_dict_all_proc.update(dict_slm_vnd)
+        combined_dict_all_proc.update(dict_prb_vnd)
+        combined_dict_all_proc.update(dict_erm_vnd)
+        combined_dict_all_proc.update(dict_ichg_vnd)
+        combined_dict_all_proc.update(dict_cont_vnd)
+        combined_dict_all_proc.update(dict_avl_vnd)
+        combined_dict_all_proc.update(dict_me_vnd)
+        combined_dict_all_proc.update(dict_rff_vnd)
+        combined_dict_all_proc.update(dict_cfg_vnd)
+        combined_dict_all_proc.update(dict_upd_vnd)
+        combined_dict_all_proc.update(dict_cap_vnd)
+        combined_dict_all_proc.update(dict_mntw_vnd)
+        combined_dict_all_proc.update(dict_sd_vnd)
+
+
+    combined_dict_itsm = {}
+
+    # Проходимся по внутренним словарям и суммируем значения
+    for key in dict_inc_vnd['ITSM-INC']:
+        value = (
+                dict_inc_vnd['ITSM-INC'].get(key, 0) +
+                dict_catm_vnd['ITSM-CATM'].get(key, 0) +
+                dict_cfg_vnd['ITSM-CFG'].get(key, 0) +
+                dict_slm_vnd['ITSM-SLM'].get(key, 0) +
+                dict_prb_vnd['ITSM-PRB'].get(key, 0) +
+                dict_erm_vnd['ITSM-ERM'].get(key, 0) +
+                dict_rff_vnd['ITSM-RFF'].get(key, 0) +
+                dict_ichg_vnd['ITSM-ICHG'].get(key, 0) +
+                dict_upd_vnd['ITSM-UPD'].get(key, 0) +
+                dict_avl_vnd['ITSM-AVL'].get(key, 0) +
+                dict_me_vnd['ITSM-M&E'].get(key, 0) +
+                dict_cont_vnd['ITSM-CONT'].get(key, 0))
+                # dict_cap_vnd['ITSM-CAP'].get(key, 0) +
+                # dict_mntw_vnd['ITSM-MNTW'].get(key, 0) +
+                # dict_sd_vnd['ITSM-SD'].get(key, 0))
+
+        combined_dict_itsm[key] = value  #Подсчет всех требований для 12 - ти ПРОЦЕССОВ для расчета индекса надежности и 3, 4-го уровней надежности!!!
+    # print(combined_dict_itsm)
+
+
+
+
+ # ******************************************** Этот код лучше исключить так как он берет информацию из Опросника и т.е.
+    # все цифры по степени критичности - Это не нужно!!!
+
+    # Инициализируем счетчик с нулевыми значениями
+    counts_iz_oprosnika = {'Критичный': 0, 'Высокий': 0, 'Умеренный': 0, 'Рекомендация на развитие': 0}
+    counts_iz_edk = {'Критичный': 0, 'Высокий': 0, 'Умеренный': 0, 'Рекомендация на развитие': 0}
+    # Перебираем все записи в словаре
+    for key in oprosnik_dict:
+        # Второй элемент в списке - это уровень критичности
+        criticality = oprosnik_dict[key][1]
+        # Убираем возможные пробелы и приводим к строке
+        criticality = str(criticality).strip()
+        # Увеличиваем счетчик, если значение есть в нашем словаре
+        if criticality in counts_iz_oprosnika:
+            counts_iz_oprosnika[criticality] += 1
+
+    for key in book_opros:
+        # Второй элемент в списке - это уровень критичности
+        criticality = book_opros[key][1]
+        vipolnenie = book_opros[key][2]
+        # Убираем возможные пробелы и приводим к строке
+        criticality = str(criticality).strip()
+        # Увеличиваем счетчик, если значение есть в нашем словаре
+        if vipolnenie == 'да':
+            if criticality in counts_iz_edk:
+                counts_iz_edk[criticality] += 1
+    #===============================================================================================================================================
+
+    # Вычисляем вообще сколько требований в Опроснике первоначальном
+
+
+
+    result_opros_itsm_proc = {'Всего требований': 0, 'Всего требований на 3': 0, 'Всего выполнено требований на 3': 0, 'Всего требований на 4': 0, 'Всего выполнено требований на 4': 0}
+    for key, value_list in book_opros.items():
+        if value_list[0] != 'ЦТК':
+            if value_list[1] != 'Рекомендация на развитие':
+                result_opros_itsm_proc['Всего требований'] += 1
+                if value_list[0] == '3':
+                    result_opros_itsm_proc['Всего требований на 3'] += 1
+                if value_list[0] == '3' and value_list[2] == 'да':
+                    result_opros_itsm_proc['Всего выполнено требований на 3'] += 1
+                    # Добавьте здесь логику для подсчёта выполненных требований на 3, если нужно
+                if value_list[0] == '4':
+                    result_opros_itsm_proc['Всего требований на 4'] += 1
+                if value_list[0] == '4' and value_list[2] == 'да':
+                    result_opros_itsm_proc['Всего выполнено требований на 4'] += 1
+
+
+    # print(combined_dict_itsm)
+
+    # print(counts_iz_oprosnika) # ---> {'Критичный': 121, 'Высокий': 117, 'Умеренный': 26, 'Рекомендация на развитие': 39}
+    # print(counts_iz_edk) # ---> {'Критичный': 37, 'Высокий': 25, 'Умеренный': 6, 'Рекомендация на развитие': 11}
+    # print(combined_dict_itsm) # ---> {'Всего требований': 263, 'Всего требований на 3': 138, 'Всего выполнено требований на 3': 47, 'Всего требований на 4': 125, 'Всего выполнено требований на 4': 21}
+    # print(combined_dict_all_proc) # ---> Для листа Надежности по всем процессам
+
+
+    #Считаем из отчёта общего по ЕОИТ все отклонения(Технологии (ИТ-услуги)) + статусы если они будут в дальнейшем
+    result_stack_as = {}
+    for key, value_list in book_stata_uroven.items():
+        result_stack_as[key] = [value_list[i:i+4] for i in range(0, len(value_list), 4)]
+
+
+    def my_as_stata(result_stack_as):
+        counts = {}
+        counts_old = {}
+        dic_itog = {}
+
+        #Фильтрация по уровням отклонения среди всех АС, исключает уровни отклонения от ЦТК, т.к. коды вопросов не цифровые
+        output_dictionary = defaultdict(list)
+        # Фильтрация по первому элементу списка
+        for key, value_list in result_stack_as.items():
+            filtered_value_list = list(filter(lambda x: x[0].isdigit(), value_list))
+            output_dictionary[key] = filtered_value_list
+
+
+        risk_levels = ('Критичный','Высокий','Умеренный')
+        for key, value_list in output_dictionary.items():
+
+            level_counts = Counter([item[-2] for item in output_dictionary[key]])
+            counts_old[key] = {risk_level: level_counts[risk_level] for risk_level in risk_levels}
+
+        # print('===================================================================================')
+        for key in output_dictionary:
+            level_counts = Counter([item[-2] for item in output_dictionary[key] if
+                                    not any(phrase in item for phrase in (
+                                        'Устранено - подтверждено ПАО',
+                                        'Исключение из реестра - подтверждено ПАО',
+                                        '(ПАО) Устранено - подтверждено ПАО',
+                                        '(ПАО) Исключение из реестра - подтверждено ПАО'))])
+
+            # total_count = sum(level_counts.values())
+            counts[key] = {risk_level: level_counts[risk_level]for risk_level in risk_levels}
+        # print(counts)
+        #Результат {'aos.smkt': ['11/6', '3/2', '1/0']}
+        for key in counts_old:
+            if key in counts:
+                dic_itog[key] = []
+                for level in counts_old[key]:
+                    # Считаем разницу между значениями
+                    diff = counts_old[key][level] - counts[key][level]
+
+                    # Проверяем, равна ли разница нулю
+                    if counts[key][level] == 0:
+                        dic_itog[key].append(f"{counts_old[key][level]}/{counts_old[key][level]}")  # Используем diff, если разница равна 0
+
+
+                    else:
+                        dic_itog[key].append(f"{counts_old[key][level]}/{counts_old[key][level]-counts[key][level]}")
+
+        return dic_itog
+
+
+    new_as_statistic = my_as_stata(result_stack_as)
+
+    # print(new_as_statistic) #---->'Shiptor ERP': ['83/71', '10/10', '0/0']}
+
+
+
+    # myfunc_as -Собирает из ОТЧЕТА по ЕОИТ все номера отклонений, у которых статус пустой, для того чтобы сгенерить отчет и вытащить из базы знаний отклонения
+    # genomy = ['Устранено - подтверждено ПАО', 'Исключение из реестра - подтверждено ПАО', '(ПАО) Устранено - подтверждено ПАО', '(ПАО) Исключение из реестра - подтверждено ПАО']
+    # myfunc_as = {key: [item[0] for item in value if len(item) > 1 and item[1] not in genomy] for key, value in real_result_stack.items() if any(len(item) > 1 and item[1] not in genomy for item in value)}
+
+    new_book_stac = [book_stack]
+
+
+    # print(result_stack_as)
+
+
+
+    # reeeez = (sublst for lst in result_stack_as.values() for sublst in lst)
+    # if 'ПС-3' in (k[-1] for k in reeeez):
+    #     print('ssdfsdfsdf')
+
+    #Добавляем словарь, содержащий все АС, которые не попали в ЕДК, т.к. до формирования ЕРО были закрыты
+    mas_it_uslug = {} # Словарь куда будут попадать АС-ки, которые не попали в ЕДК
+
+    def find_and_open_excel(adress_as, result_stack_as, mas_it):
+        as_dict = {}
+        if not os.path.isdir(adress_as):
+            print(f"Ошибка: папка '{adress_as}' не найдена. Возможно отсутствуют анкеты по ИТ-услугам")
+            return
+
+        for filename in os.listdir(adress_as):
+            if filename.endswith(".xlsx"):
+                file_path = os.path.join(adress_as, filename)
+                try:
+                    wb = openpyxl.load_workbook(file_path, data_only=True)
+                    # print(f'Открываем файл - {filename}')
+                    ws = wb['Титульный']
+                    print(f'Работаем с файлом - {filename} ---> АС - {ws["C4"].value}')
+
+                    cell_value_ps = ws['C8'].value
+                    #Распарсим значения для поиска по прикладному сервису (ПС-1, ПС-2, ПС-3....)
+                    real_as_relize = (sublst for lst in result_stack_as.values() for sublst in lst)
+                    if cell_value_ps not in (k[-1] for k in real_as_relize):
+
+
+                        #НУЖНО ПРАВИТЬ, т.к. ОШИБКА всего требований на 3 равно должно быть выполненных на 3 ну и на 4 равна 4
+                        mas_it[ws['C4'].value] = [ws['C5'].value, round(ws['D20'].value, 2), round(ws['G20'].value, 2)]
+
+                        print(f'АС -  {ws["C4"].value} отсутствует в файле ЕДК, возможно по ней нет отклонений')
+                        # sys.exit()
+                        continue
+
+                    elif ws['C4'].value != 0:
+                        as_dict[ws['C4'].value] = [ws['C5'].value, round(ws['D21'].value, 2), round(ws['F21'].value, 2)]
+                    else:
+                        print(f'Не заполненно поле -- Название ИТ-услуги -- в файле {filename}  ')
+                        break
+
+                except Exception as e:
+                    print(f"Ошибка при открытии файла '{file_path}': {e}")
+
+
+
+        return as_dict, mas_it
+
+    rezult_as, mas_it_as = find_and_open_excel(adress_as, result_stack_as, mas_it_uslug)
+
+
+    #Грузим ВСЕ АС КОТОРЫЕ ЕСТЬ В ПАПКЕ AS, они потом понадобяися для
+
+    def all_func_as(adress_as):
+
+        # new_book_stac - По этому словарю происходит поиск  элементов в папке AS, т.е. всех анкет
+        # result_stack - Это то что загружается с Отчета_по_ITSM, получается словарь: {Технология: [[Код вопроса,Статус]]}
+        # adress_as - Это адрес который передается в словарь для поиска анкет в папке АS
+        #rezult_as - Это словарь где выводится АС: {'1С': ['MC', 2.85, 3.8], 'АС Аналитика': ['BO', 2.52, 3.45], 'АС Брокер': ['BC', 2.75, 3.65]}
+        # new_result - Это словарь получаемый из файлов в папке AS, где Номер вопроса: 'Уровень готовности надёжности', 'Вес требования (ВНД 5492)'
+
+        new_result = {}
+        new_result_result_treb = {}
+
+        if not os.path.isdir(adress_as):
+            print(f"Ошибка: папка '{adress_as}' не найдена.")
+            return
+
+        for filename in os.listdir(adress_as):
+            if filename.endswith(".xlsx"):
+                file_path = os.path.join(adress_as, filename)
+                try:
+                    wb = openpyxl.load_workbook(file_path, data_only=True)
+                    ws = wb['Технологии']
+                    wm = wb['Титульный']
+                    new_result[wm['C4'].value] = []
+                    new_result_result_treb[wm['C4'].value] = []
+
+                    for row in range(2, ws.max_row + 1):
+                        keys = ws.cell(row, 1).value  # Столбец A
+                        value_keys = wm['C8'].value  # Столбец F
+                        value_l = ws.cell(row, 14).value  # Столбец N
+                        new_result[wm['C4'].value].append((keys, value_keys, value_l, wm['C5'].value))
+                except Exception as e:
+                    print(f"Ошибка при открытии файла '{file_path}': {e}")
+
+        clean_new_result = {}
+
+        for key, value in new_result.items():
+            if key is not None and (not isinstance(value, list) or not any(item is None or item == '-' for item in value)):
+                clean_new_result[key] = value
+
+
+        return clean_new_result
+
+    if __name__ == "__main__":
+        all_func_as(adress_as)
+
+    #---------------------------------------------------------Вносим  и меняем значения УРОВЕНЬ ОТКЛОНЕНИЯ согласно загруженному словарю из общего списка---------------
+    new_data = all_func_as(adress_as).copy()
+
+    # Проходим по каждому ключу словаря
+    for key in new_data:
+        # Создаем новый список для хранения отфильтрованных и модифицированных данных
+        new_list = []
+
+        # Проходим по каждому элементу списка, соответствующего данному ключу
+        for item in new_data[key]:
+            # Если элемент содержит хотя бы одно значение None, пропускаем его
+            if any(x is None for x in item):
+                continue
+
+            # Если второй элемент равен "Нет риска" и третий элемент равен 3, меняем третий элемент на "Критичный"
+
+            if item[2] == 3:
+                new_item = (item[0], item[1], 'Надежность 3', item[3])
+            # Если второй элемент равен "Нет риска" и третий элемент равен 4, меняем третий элемент на "Умеренный"
+            elif item[2] == 4:
+                new_item = (item[0], item[1], 'Надежность 4', item[3])
+            else:
+                new_item = item
+            # Добавляем модифицированный элемент в новый список
+            new_list.append(new_item)
+        # Обновляем значение в словаре новым списком
+        new_data[key] = new_list
+
+
+    # Функция для обновления словаря result_stack на основе данных из new_data
+    def update_result_stack(result_stack, new_data):
+        for key in result_stack.keys():
+            if key in new_data:
+                # Проходимся по всем значениям для данного ключа в result_stack
+                for index, value in enumerate(result_stack[key]):
+                    id_value = value[0]
+                    # Преобразуем id_value в int, чтобы сравнить с ключами из new_data
+                    if int(id_value) in {item[0] for item in new_data[key]}:
+                        # Находим соответствующее значение в new_data
+                        matching_item = next(item for item in new_data[key] if item[0] == int(id_value))
+                        # Добавляем новые элементы в конец списка value
+                        value.extend(matching_item[1:])
+
+        return result_stack
+
+
+    # Обновленный результат
+    updated_result_stack = update_result_stack(result_stack, new_data)
+
+    # print(result_opros_itsm_proc)
+    # print(oprosnik_dict)
+
+    #Выясняем сколько вообще требований было выполнено в Опроснике, до того как попасть в реестр ЕДК
+    opros_treb_dtn = {'Всего выполнено требований на 3': 0, 'Всего выполнено требований на 4': 0}
+    for key, value in oprosnik_dict.items():
+        if value[0] == '3' and value[2] == 'да':
+            opros_treb_dtn['Всего выполнено требований на 3'] += 1
+        if value[0] == '4' and value[2] == 'да':
+            opros_treb_dtn['Всего выполнено требований на 4'] += 1
+
+
+    # print(opros_treb_dtn)
+    #
+    # print(combined_dict_itsm)
+    # print(result_opros_itsm_proc)
+
+    # Обновляем combined_dict_itsm значениями из opros_treb_dtn
+    # combined_dict_itsm.update(opros_treb_dtn)
+
+
+
+    def func_as_artefakt(result_stack, adress_as, rezult_as, realudate):
+
+        # new_book_stac - По этому словарю происходит поиск  элементов в папке AS, т.е. всех анкет
+        # result_stack - Это то что загружается с Отчета_по_ITSM, получается словарь: {Технология: [[Код вопроса,Статус]]}
+        # adress_as - Это адрес который передается в словарь для поиска анкет в папке АS
+        #rezult_as - Это словарь где выводится АС: {'1С': ['MC', 2.85, 3.8], 'АС Аналитика': ['BO', 2.52, 3.45], 'АС Брокер': ['BC', 2.75, 3.65]}
+        # new_result - Это словарь получаемый из файлов в папке AS, где Номер вопроса: 'Уровень готовности надёжности', 'Вес требования (ВНД 5492)'
+
+        new_result = {}
+        new_result_result_treb = {}
+        new_rez_as = rezult_as.copy()
+        result_as_new = result_stack.copy()
+        total_sum_all_treb_3 = 0
+        total_sum_all_treb_4 = 0
+        total_sum_release_treb_3 = 0
+        total_sum_release_treb_4 = 0
+
+
+
+        #aga_three и aga_four необходимы для добавления значений по уровням готовности для каждой АС
+        aga_three = {}
+        aga_four = {}
+
+        if not os.path.isdir(adress_as):
+            print(f"Ошибка: папка '{adress_as}' не найдена.")
+            return
+
+        for filename in os.listdir(adress_as):
+            if filename.endswith(".xlsx"):
+                file_path = os.path.join(adress_as, filename)
+                try:
+                    wb = openpyxl.load_workbook(file_path, data_only=True)
+                    ws = wb['Технологии']
+                    wm = wb['Титульный']
+                    new_result[wm['C4'].value] = []
+                    new_result_result_treb[wm['C4'].value] = []
+
+                    for row in range(2, ws.max_row + 1):
+                        keys = ws.cell(row, 1).value  # Столбец A
+
+                        value_l = ws.cell(row, 14).value  # Столбец N
+                        value_n = ws.cell(row, 16).value  # Столбец P
+
+                        # new_result[keys] = [value_l, value_n]
+                        #Вывод количество выполненных требований к общему числу из Титульной страницы
+                        # Определяем диапазоны ячеек
+                        if wm['E18'].value == 0 or wm['G18'] == 0:
+                            range_1 = 'E10:E18'
+                            range_3 = 'G10:G18'
+                            range_2 = 'F10:F18'
+                            range_4 = 'H10:H18'
+                        else:
+                            range_1 = 'E10:E17'
+                            range_3 = 'G10:G17'
+                            range_2 = 'F10:F17'
+                            range_4 = 'H10:H17'
+
+                        # Функция для получения списка значений из диапазона
+                        def get_values_from_range(wm, range_str):
+                            values = []
+                            for row in wm[range_str]:
+                                for cell in row:
+                                    # Обрабатываем три случая: '-', None и другие значения
+                                    if cell.value == '-' or cell.value is None:
+                                        values.append(0)
+                                    else:
+                                        values.append(cell.value)
+                            return values
+
+                        # Получаем списки значений для обоих диапазонов
+                        values_1 = get_values_from_range(wm, range_1)
+                        values_2 = get_values_from_range(wm, range_3)
+                        values_3 = get_values_from_range(wm, range_2)
+                        values_4 = get_values_from_range(wm, range_4)
+
+                        new_result[wm['C4'].value].append((keys, value_l, value_n))
+
+                        new_result_result_treb[wm['C4'].value].append((sum(values_1),  sum(values_3), sum(values_2), sum(values_4)))
+
+
+                except Exception as e:
+                    print(f"Ошибка при открытии файла '{file_path}': {e}")
+
+
+
+
+        #Получили реестр требований по всем АС для дальнейшего расчета и подсчета индекса надежности. Очень ВАЖНО!!!
+        reestr_trebovan = {key: list(set(value)) for key, value in new_result_result_treb.items()}
+
+        #Это нужно, чтобы удалить те АС-ки, которые не вошли в реестр ЕДК, чтобы не считать их данные мы их исключим!!!
+        for id_key, vial_list in mas_it_as.items():
+            if id_key in reestr_trebovan:
+                del reestr_trebovan[id_key]
+
+        clean_new_result = {}
+
+        for key, value in new_result.items():
+            if key is not None and (not isinstance(value, list) or not any(item is None or item == '-' for item in value)):
+                clean_new_result[key] = value
+        for keys in new_result:
+            if keys in result_stack:
+                for item in new_result[keys]:
+                    # Проверяем, что item не None и имеет хотя бы один элемент
+                    if item is not None and len(item) > 0:
+                        # Проверяем, что первый элемент item существует и является строкой
+                        # if isinstance(item[0], str) and item[0].isdigit():
+                        if isinstance(item[0], (int, float)):
+                            for item2 in result_stack[keys]:
+                                # Проверяем, что item2 не None и имеет хотя бы один элемент
+                                if item2 is not None and len(item2) > 0 and item2[0].isdigit():
+                                    # Проверяем первый элемент item2
+                                    if item[0] == int(item2[0]):
+
+
+                                        if (item2[12] == 'Устранено - подтверждено ПАО' or
+                                                item2[12] == 'Исключение из реестра - подтверждено ПАО' or
+                                                item2[12] == '(ПАО) Устранено - подтверждено ПАО' or
+                                                item2[12] == '(ПАО) Исключение из реестра - подтверждено ПАО'):
+                                            if item[1] == 3:
+
+                                                aga_three.setdefault(keys, []).append(round(item[2], 6))
+
+                                            if item[1] == 4:
+
+                                                aga_four.setdefault(keys, []).append(round(item[2], 6))
+
+
+        #
+        # print(aga_three)
+        for key_three in aga_three:
+            aga_three[key_three] = [sum(aga_three[key_three])]
+        # print(aga_four)
+        for key_four in aga_four:
+            aga_four[key_four] = [sum(aga_four[key_four])]
+        # print('3 ---->',aga_three)
+        # print('4 ---->',aga_four)
+        for new, val in new_rez_as.items():
+
+            if new in aga_three:
+                val[1] = val[1] + round(aga_three[new][0], 2)
+            if new in aga_four:
+                val[2] = val[2] + round(aga_four[new][0], 2)
+
+
+        # print('3 ---->',aga_three)
+        # print('4 ---->',aga_four)
+
+
+        reality_dict_all = {}
+
+        for ars_key, ars_val in reestr_trebovan.items():
+            rs_val_three = aga_three.get(ars_key, None)
+            rs_val_four = aga_four.get(ars_key, None)
+
+            if ars_key in aga_three.keys() or ars_key in aga_four.keys():
+                total_requirements = sum([float(x) for x in (ars_val[0][0], ars_val[0][2])])
+                total_on_three = ars_val[0][0]
+                total_on_four = ars_val[0][2]
+
+                if rs_val_three is None:
+                    completed_on_three = ars_val[0][1]
+                else:
+                    # print(ars_val[0][0], rs_val_three, ars_val[0][1])
+                    if isinstance(rs_val_three[0], int):
+                        completed_on_three = rs_val_three[0] + ars_val[0][1]
+                    else:
+                        completed_on_three = ars_val[0][0] * sum(rs_val_three) + ars_val[0][1]
+
+                if rs_val_four is None:
+                    completed_on_four = ars_val[0][3]
+                else:
+                    if isinstance(rs_val_four[0], int):
+                        completed_on_four = rs_val_four[0] + ars_val[0][3]
+                    else:
+                        completed_on_four = ars_val[0][2] * sum(rs_val_four) + ars_val[0][3]
+
+
+
+                reality_dict_all.setdefault(ars_key, []).append([
+                    'Всего требований', total_requirements,
+                    'Всего на 3-ку', total_on_three,
+                    'Выполненных на 3-ку', completed_on_three,
+                    'Всего на 4-ку', total_on_four,
+                    'Выполненных на 4-ку', completed_on_four
+                ])
+                # print(reality_dict_all)
+            else:
+
+                reality_dict_all.setdefault(ars_key, []).append([
+                    'Всего требований', sum([float(x) for x in (ars_val[0][0], ars_val[0][2])]),
+                    'Всего на 3-ку', ars_val[0][0],
+                    'Выполненных на 3-ку', ars_val[0][0] * sum(rs_val_three or []) + ars_val[0][1],
+                    'Всего на 4-ку', ars_val[0][2],
+                    'Выполненных на 4-ку', ars_val[0][2] * sum(rs_val_four or []) + ars_val[0][3]])
+
+        #Собрали весь пул требований для расчета из словаря по АС(reality_dict_all) и по Процессам (updated_dict1)
+        #В функции будем расчитывать индекс надежности и готовности по АС и по Процессам
+        #1. Индекс надежности = (Сумма выполненных требований на 3-ку и 4-ку по процессам и АС)/ Сумма всех требований на 3-ку и 4-ку по процессам и АС
+
+
+
+        index_nadejnost_proc = {'Всего требований по ITSM':(int(realudate['Всего требований'])),
+                                                            'Всего требований по ITSM на 3': (int(realudate['Всего требований на 3'])),
+                                                            'Выполненно требований по ITSM на 3': (int(realudate['Всего выполнено требований на 3'])),
+                                                            'Всего требований по ITSM на 4':(int(realudate['Всего требований на 4'])),
+                                                            'Выполненно требований по ITSM на 4': (int(realudate['Всего выполнено требований на 4']))
+        }
+
+
+
+        # for key_pr, val_pr in realudate.items():
+        #
+        #     index_nadejnost_proc.setdefault('Всего требований по ITSM', []).append(int(realudate['Всего требований']))
+        #     index_nadejnost_proc.setdefault('Всего требований по ITSM на 3', []).append(int(realudate['Всего требований на 3']))
+        #     index_nadejnost_proc.setdefault('Выполненно требований по ITSM на 3', []).append(int(realudate['Всего выполнено требований на 3']))
+        #     index_nadejnost_proc.setdefault('Всего требований по ITSM на 4', []).append(int(realudate['Всего требований на 4']))
+        #     index_nadejnost_proc.setdefault('Выполненно требований по ITSM на 4', []).append(int(realudate['Всего выполнено требований на 4']))
+
+
+
+
+        index_nadejnost_as = {}
+        for key_as, val_as in reality_dict_all.items():
+
+
+            #Это блок отвечающий за АС
+            index_nadejnost_as.setdefault('Всего требований по АС', []).append((val_as[0][1]))
+            index_nadejnost_as.setdefault('Всего требования по АС на 3', []).append((val_as[0][3]))
+            index_nadejnost_as.setdefault('Выполненно требований по АС на 3', []).append(val_as[0][5])
+            index_nadejnost_as.setdefault('Всего требований по АС на 4', []).append((val_as[0][7]))
+            index_nadejnost_as.setdefault('Выполненно требований по АС на 4', []).append(val_as[0][9])
+
+
+
+        sum_index_nadejnost_proc = index_nadejnost_proc
+        sum_index_nadejnost_as = {
+            'Всего требований по АС': 0,
+            'Всего требования по АС на 3': 0,
+            'Выполненно требований по АС на 3': 0,
+            'Всего требований по АС на 4': 0,
+            'Выполненно требований по АС на 4': 0
+        }
+        # for key in index_nadejnost_proc:
+        #
+        #     sum_index_nadejnost_proc[key] = sum(index_nadejnost_proc[key])
+        # print(index_nadejnost_as)
+        for key_as in index_nadejnost_as:
+            sum_index_nadejnost_as[key_as] = sum(index_nadejnost_as[key_as])
+
+
+        # Извлекаем все значения из словаря
+        values_mas_as = list(mas_it_as.values())
+
+        # Оставляем только числовые значения
+        filtered_values_mas_as = [[v for v in value if isinstance(v, (int, float))] for value in values_mas_as]
+
+        # Рассчитываем суммы
+        total_requirements = sum(sum(value) for value in filtered_values_mas_as)
+        total_requirements_on_3 = sum(value[0] for value in filtered_values_mas_as)
+        executed_requirements_on_3 = total_requirements_on_3
+        total_requirements_on_4 = sum(value[1] for value in filtered_values_mas_as)
+        executed_requirements_on_4 = total_requirements_on_4
+
+        # Создаем новый словарь
+        result_dict_close_as = {'Всего требований по АС': total_requirements,
+                                'Всего требования по АС на 3': total_requirements_on_3,
+                                'Выполненно требований по АС на 3': executed_requirements_on_3,
+                                'Всего требований по АС на 4': total_requirements_on_4,
+                                'Выполненно требований по АС на 4': executed_requirements_on_4
+                                }
+
+        # Обновление значений в словаре sum_index_nadejnost_as со словарем result_dict_close_as(это те AS которые не попали в ЕДК)
+        for key in result_dict_close_as:
+            sum_index_nadejnost_as[key] += result_dict_close_as[key]
+
+
+
+        all_dict_as_itsm = {'Всего требований по ITSM и АС': [sum_index_nadejnost_proc['Всего требований по ITSM'], sum_index_nadejnost_as['Всего требований по АС']],
+                            'Всего требований на 3 по ITSM и АС': [sum_index_nadejnost_proc['Всего требований по ITSM на 3'], sum_index_nadejnost_as['Всего требования по АС на 3']],
+                            'Выполнено требований на 3 по ITSM и АС': [sum_index_nadejnost_proc['Выполненно требований по ITSM на 3'], round(sum_index_nadejnost_as['Выполненно требований по АС на 3'])],
+                            'Всего требований на 4 по ITSM и АС': [sum_index_nadejnost_proc['Всего требований по ITSM на 4'], sum_index_nadejnost_as['Всего требований по АС на 4']],
+                            'Выполнено требований на 4 по ITSM и АС': [sum_index_nadejnost_proc['Выполненно требований по ITSM на 4'], round(sum_index_nadejnost_as['Выполненно требований по АС на 4'])]
+                            }
+
+        # print(all_dict_as_itsm)
+        # print(index_nadejnost_as)
+        # print(index_nadejnost_proc)
+        # print(realudate)
+
+
+        return new_rez_as, all_dict_as_itsm
+
+        # new_as_rezult = func_as_artefakt(result_stack, adress_as, rezult_as, updated_dict1)
+
+    new_as_rezult, realudate = func_as_artefakt(result_stack, adress_as, rezult_as, result_opros_itsm_proc)
+
+    # print(result_opros_itsm_proc) ---> {'Всего требований': 264, 'Всего требований на 3': 138, 'Всего выполнено требований на 3': 31, 'Всего требований на 4': 126, 'Всего выполнено требований на 4': 25}
+    # print(combined_dict_itsm)
+    #+++++++++++Это нужно для точно расчета, чтобы добавить эти АС в Единый реестр отклонений+++++++++++++
+    # print(result_stack)   ---> {'Address Processing': [['1002001', 'ПС-2', 'Отсутствует локальный резерв ИТ-Услуги', 'Надежность 3', 'Предоставить ответ на вопрос.
+    # print(rezult_as) #---> 'Shiptor ERP': ['MC', 2.02, 3]
+    # print(new_as_rezult) #---> 'Shiptor ERP': ['MC', 2.02, 3]
+    #Теперь нужно циклом перебрать все АС, которые не попали в ЕДК и добавить количество требований для этих АС
+
+    # print(realudate)
+
+
+
+    #=============================================== ---  Индекс надежности --- ===========================================================================
+
+    index_dtn_for_ztk = {key: sum(value) for key, value in realudate.items()}
+    #=============================================== ---  ---------- --- ===========================================================================
+
+    # print(book_itsm)
+
+
+
+
+
+    wb = Workbook()
+    ws = wb.active
+    sheet = wb.active
+
+    ws.title = 'Единая дорожная карта'
+    ws_help = wb.create_sheet(title='Справочник')
+    second_workshet = wb.create_sheet(title='Показатели надежности')
+    five_workshet = wb.create_sheet(title='Детальная статистика по АС')
+    six_workshet = wb.create_sheet(title='Тепловая карта для 3-го уровня')
+    seven_workshet = wb.create_sheet(title='Тепловая карта для 4-го уровня')
+
+
+
+    # Определяем стиль границы
+    thin_border = Border(left=Side(style='thin'),
+                         right=Side(style='thin'),
+                         top=Side(style='thin'),
+                         bottom=Side(style='thin'))
+
+    #Изменяем ячейки по высоте на втором активном листе
+    second_workshet.row_dimensions[1].height = 50
+
+    #Изменяем ячейки по высоте на первом листе
+    ws.row_dimensions[1].height = 60
+
+
+    #Статусы для листа "СПРАВОЧНИК"----------------------------------------------------------------------------------------------
+    stata_help = {'Статус отклонения': ['(ДЗО) В работе - анализ',
+                                        '(ДЗО) В работе – план устранения на проверку ПАО',
+                                        '(ДЗО) В работе - реализация',
+                                        '(ДЗО) Устранено - на проверку ПАО',
+                                        '(ПАО) Устранено - подтверждено ПАО',
+                                        '(ДЗО) Исключение из реестра - на проверку ПАО',
+                                        '(ПАО) Исключение из реестра - подтверждено ПАО',
+                                        '(ДЗО) Принятие рисков - на утверждение ПАО',
+                                        '(ПАО) Принятие рисков - утверждено ПАО']}
+
+    about_stata = {'Описание статуса':['ДЗО анализирует найденное отклонение и рекомендации',
+                                       'ДЗО проработало необходимые мероприятия для устранения отклонения, ставит ДЗО',
+                                       'ПАО подтверждает мероприятия, проработанные ДЗО для устранения отклонения, ДЗО реализует мероприятия',
+                                       'ДЗО устранило отклонение, статус ставит ДЗО',
+                                       'ПАО согласно с тем, что отклонение считается устраненным, статус ставит ДЗО',
+                                       'ДЗО несогласно с отклонением и предлагает его исключить из списка на устранение, статус ставит ДЗО',
+                                       'ПАО согласно с тем, что данное отклонение исключается из списка на устранение, статус ставит ПАО',
+                                       'ДЗО принимает риски, связанные с отклонением и не будет его устранять, статус ставит ДЗО',
+                                       'ПАО согласно с тем, что ДЗО принимает риски, связанные с отклонением и не будет его устранять, статус ставит ПАО']}
+
+
+    # Заголовки
+    ws_help['P1'].value = 'Статус отклонения'
+    ws_help['Q1'].value = 'Описание статуса'
+
+    # Форматируем заголовки
+    ws_help['P1'].font = Font(name='Calibri', size=11, bold=True)
+    ws_help['Q1'].font = Font(name='Calibri', size=11, bold=True)
+    ws_help['P1'].font = Font(name='Calibri', size=12, bold=True)
+    ws_help.column_dimensions['P'].width = 35
+    ws_help['Q1'].font = Font(name='Calibri', size=12, bold=True)
+
+
+    # Заполняем статусы отклонений
+    start_row_zero = 2
+    for status in stata_help['Статус отклонения']:
+        cell = ws_help.cell(row=start_row_zero, column=16)
+        cell.value = status
+        cell.font = Font(name='Calibri', size=11, bold=False)
+        start_row_zero += 1
+
+    # Заполняем описания статусов
+    start_row_zero = 2
+    for description in about_stata['Описание статуса']:
+        cell = ws_help.cell(row=start_row_zero, column=17)
+        cell.value = description
+        cell.font = Font(name='Calibri', size=11, bold=False)
+        start_row_zero += 1
+
+    #----------------------------------------Конец вывода статусов отклонений----------------------------------------
+
+    # Скрываем второй лист
+    ws_help.sheet_state = 'hidden'  # Возможные состояния: visible, hidden, veryHidden
+    dv = DataValidation(type="list", formula1='=Справочник!$P$2:$P$10', allow_blank=True)
+    ws.add_data_validation(dv)
+
+    #Изменяем ячейки по ширине во второй вкладке ("Показатели надежности")
+
+    second_workshet['A1'].font = Font(name='Calibri', size=12, bold=True)
+    second_workshet.column_dimensions['A'].width = 70
+
+
+
+    second_workshet['B1'].font = Font(name='Calibri',size=12, bold=True)
+    second_workshet.column_dimensions['B'].width = 30
+
+    second_workshet['C1'].font = Font(name='Calibri',size=12, bold=True)
+    second_workshet.column_dimensions['C'].width = 30
+
+    second_workshet['D1'].font = Font(name='Calibri',size=12, bold=True)
+    second_workshet.column_dimensions['D'].width = 20
+
+
+    second_workshet['E1'].font = Font(name='Calibri',size=12, bold=True)
+    second_workshet.column_dimensions['E'].width = 20
+
+    second_workshet['F1'].font = Font(name='Calibri',size=12, bold=True)
+    second_workshet.column_dimensions['F'].width = 20
+
+    second_workshet['G1'].font = Font(name='Calibri',size=12, bold=True)
+    second_workshet.column_dimensions['G'].width = 20
+
+    second_workshet['H1'].font = Font(name='Calibri',size=12, bold=True)
+    second_workshet.column_dimensions['H'].width = 30
+
+    second_workshet['I1'].font = Font(name='Calibri',size=12, bold=True)
+    second_workshet.column_dimensions['I'].width = 30
+
+
+
+    ws.column_dimensions['A'].width = 25
+    ws['A1'].font = Font(name='Calibri', size=8, bold=True)
+    ws.column_dimensions['B'].width = 24
+    ws['B1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['C'].width = 20
+    ws['C1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['D'].width = 25
+    ws['D1'].font = Font(name='Calibri', size=8, bold=True)
+    ws.column_dimensions['E'].width = 31
+    ws['E1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['F'].width = 18
+    ws['F1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['G'].width = 10
+    ws['G1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['H'].width = 10
+    ws['H1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['I'].width = 16
+    ws['I1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['J'].width = 16
+    ws['J1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['K'].width = 18
+    ws['K1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['L'].width = 25
+    ws['L1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['M'].width = 50
+    ws['M1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['N'].width = 50
+    ws['N1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['O'].width = 14
+    ws['O1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['P'].width = 17
+    ws['P1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['Q'].width = 20
+    ws['Q1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['R'].width = 22
+    ws['R1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['S'].width = 17
+    ws['S1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['T'].width = 17
+    ws['T1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['U'].width = 14
+    ws['U1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['V'].width = 14
+    ws['V1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['W'].width = 35
+    ws['W1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['X'].width = 14
+    ws['X1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['Y'].width = 22
+    ws['Y1'].font = Font(name='Calibri',size=8, bold=True)
+    ws.column_dimensions['Z'].width = 22
+    ws['Z1'].font = Font(name='Calibri',size=8, bold=True)
+
+
+
+    #Изменяем ячейки по ширине в 4-й вкладке ("Детальная статитстика по АС")
+
+    five_workshet['A1'].font = Font(name='Calibri', size=12, bold=True)
+    five_workshet.column_dimensions['A'].width = 70
+    five_workshet['B1'].font = Font(name='Calibri',size=12, bold=True)
+    five_workshet.column_dimensions['B'].width = 30
+    five_workshet['C1'].font = Font(name='Calibri',size=12, bold=True)
+    five_workshet.column_dimensions['C'].width = 30
+    five_workshet['D1'].font = Font(name='Calibri',size=12, bold=True)
+    five_workshet.column_dimensions['D'].width = 30
+    five_workshet['E1'].font = Font(name='Calibri',size=12, bold=True)
+    five_workshet.column_dimensions['E'].width = 30
+
+
+    six_workshet['A1'].font = Font(name='Calibri', size=12, bold=True)
+    six_workshet.column_dimensions['A'].width = 17
+    six_workshet['B1'].font = Font(name='Calibri',size=12, bold=True)
+    six_workshet.column_dimensions['B'].width = 17
+    six_workshet['C1'].font = Font(name='Calibri',size=12, bold=True)
+    six_workshet.column_dimensions['C'].width = 17
+    six_workshet['D1'].font = Font(name='Calibri',size=12, bold=True)
+    six_workshet.column_dimensions['D'].width = 17
+    six_workshet['E1'].font = Font(name='Calibri',size=12, bold=True)
+    six_workshet.column_dimensions['E'].width = 17
+    six_workshet['F1'].font = Font(name='Calibri', size=12, bold=True)
+    six_workshet.column_dimensions['F'].width = 17
+    six_workshet['G1'].font = Font(name='Calibri',size=12, bold=True)
+    six_workshet.column_dimensions['G'].width = 17
+    six_workshet['H1'].font = Font(name='Calibri',size=12, bold=True)
+    six_workshet.column_dimensions['H'].width = 17
+    six_workshet['I1'].font = Font(name='Calibri',size=12, bold=True)
+    six_workshet.column_dimensions['I'].width = 17
+    six_workshet['J1'].font = Font(name='Calibri',size=12, bold=True)
+    six_workshet.column_dimensions['J'].width = 17
+    six_workshet['K1'].font = Font(name='Calibri', size=12, bold=True)
+    six_workshet.column_dimensions['K'].width = 17
+    six_workshet['L1'].font = Font(name='Calibri',size=12, bold=True)
+    six_workshet.column_dimensions['L'].width = 17
+    six_workshet['M1'].font = Font(name='Calibri',size=12, bold=True)
+    six_workshet.column_dimensions['M'].width = 17
+    six_workshet['N1'].font = Font(name='Calibri',size=12, bold=True)
+    six_workshet.column_dimensions['N'].width = 17
+    six_workshet['O1'].font = Font(name='Calibri',size=12, bold=True)
+    six_workshet.column_dimensions['O'].width = 17
+    six_workshet['P1'].font = Font(name='Calibri',size=12, bold=True)
+    six_workshet.column_dimensions['P'].width = 17
+    six_workshet['Q1'].font = Font(name='Calibri',size=12, bold=True)
+    six_workshet.column_dimensions['Q'].width = 17
+    six_workshet['R1'].font = Font(name='Calibri',size=12, bold=True)
+    six_workshet.column_dimensions['R'].width = 17
+    six_workshet['S1'].font = Font(name='Calibri',size=12, bold=True)
+    six_workshet.column_dimensions['S'].width = 17
+    six_workshet['T1'].font = Font(name='Calibri',size=12, bold=True)
+    six_workshet.column_dimensions['T'].width = 17
+
+
+
+
+
+
+
+    seven_workshet['A1'].font = Font(name='Calibri', size=12, bold=True)
+    seven_workshet.column_dimensions['A'].width = 17
+    seven_workshet['B1'].font = Font(name='Calibri',size=12, bold=True)
+    seven_workshet.column_dimensions['B'].width = 17
+    seven_workshet['C1'].font = Font(name='Calibri',size=12, bold=True)
+    seven_workshet.column_dimensions['C'].width = 17
+    seven_workshet['D1'].font = Font(name='Calibri',size=12, bold=True)
+    seven_workshet.column_dimensions['D'].width = 17
+    seven_workshet['E1'].font = Font(name='Calibri',size=12, bold=True)
+    seven_workshet.column_dimensions['E'].width = 17
+    seven_workshet['F1'].font = Font(name='Calibri', size=12, bold=True)
+    seven_workshet.column_dimensions['F'].width = 17
+    seven_workshet['G1'].font = Font(name='Calibri',size=12, bold=True)
+    seven_workshet.column_dimensions['G'].width = 17
+    seven_workshet['H1'].font = Font(name='Calibri',size=12, bold=True)
+    seven_workshet.column_dimensions['H'].width = 17
+    seven_workshet['I1'].font = Font(name='Calibri',size=12, bold=True)
+    seven_workshet.column_dimensions['I'].width = 17
+    seven_workshet['J1'].font = Font(name='Calibri',size=12, bold=True)
+    seven_workshet.column_dimensions['J'].width = 17
+    seven_workshet['K1'].font = Font(name='Calibri', size=12, bold=True)
+    seven_workshet.column_dimensions['K'].width = 17
+    seven_workshet['L1'].font = Font(name='Calibri',size=12, bold=True)
+    seven_workshet.column_dimensions['L'].width = 17
+    seven_workshet['M1'].font = Font(name='Calibri',size=12, bold=True)
+    seven_workshet.column_dimensions['M'].width = 17
+    seven_workshet['N1'].font = Font(name='Calibri',size=12, bold=True)
+    seven_workshet.column_dimensions['N'].width = 17
+    seven_workshet['O1'].font = Font(name='Calibri',size=12, bold=True)
+    seven_workshet.column_dimensions['O'].width = 17
+    seven_workshet['P1'].font = Font(name='Calibri',size=12, bold=True)
+    seven_workshet.column_dimensions['P'].width = 17
+    seven_workshet['Q1'].font = Font(name='Calibri',size=12, bold=True)
+    seven_workshet.column_dimensions['Q'].width = 17
+    seven_workshet['R1'].font = Font(name='Calibri',size=12, bold=True)
+    seven_workshet.column_dimensions['R'].width = 17
+    seven_workshet['S1'].font = Font(name='Calibri',size=12, bold=True)
+    seven_workshet.column_dimensions['S'].width = 17
+    seven_workshet['T1'].font = Font(name='Calibri',size=12, bold=True)
+    seven_workshet.column_dimensions['T'].width = 17
+
+    second_workshet['A1'] = 'Процесс'
+    second_workshet['B1'] = 'Всего требований'
+    second_workshet['C1'] = 'Требований на 3-й уровень'
+    second_workshet['D1'] = 'Выполнено требований на 3-й уровень'
+    second_workshet['E1'] = '%, достижения 3-го уровня'
+    second_workshet['F1'] = 'Требований на 4-й уровень'
+    second_workshet['G1'] = 'Выполнено требований на 4-й уровень'
+    second_workshet['H1'] = '%, достижения 4-го уровня'
+    # second_workshet['I1'] = 'Примечание'
+    # Объединение ячеек F16:H16
+    second_workshet.merge_cells('F16:H16')
+    # Запись текста в объединенную ячейку
+    second_workshet['F16'] = 'Прогноз уровня надежности'
+
+    # Цвет для Критического уровня риска(подкрашиваем ячейки)
+    high_risk_fill = PatternFill(start_color="FF9900", end_color="FF9900", fill_type="solid")
+    high_profile_fill = PatternFill(start_color="9bbb59", end_color="9bbb59", fill_type="solid")
+
+
+    five_workshet['A1'] = 'Название АС'
+    five_workshet['B1'] = 'Критичность'
+    five_workshet['C1'] = 'Уровень отклонения: Критичный'
+    five_workshet['D1'] = 'Уровень отклонения: Высокий'
+    five_workshet['E1'] = 'Уровень отклонения: Умеренный'
+
+
+
+
+
+
+
+
+
+    # print(new_as_statistic)
+    # print(rezult_as)
+
+
+    detal_sttistics_as = copy.deepcopy(new_as_statistic)  # Создаем копию словаря
+
+    for key in detal_sttistics_as:
+        if key in rezult_as:  # Проверяем, есть ли ключ в dic2 (на всякий случай)
+            detal_sttistics_as[key].insert(0, rezult_as[key][0])  # Вставляем первый элемент из dic2 в начало списка dic1
+
+
+
+    result_as_dtn = {}
+
+    for key, values in detal_sttistics_as.items():
+        new_values = []
+        for item in values:
+            if isinstance(item, str) and '/' in item:  # Если элемент содержит '/'
+                left, right = item.split('/')
+                new_values.append((int(left), int(right)))  # Преобразуем в кортеж чисел
+            else:
+                new_values.append(item)  # Иначе оставляем как есть ('BC', 'MC' и т. д.)
+        result_as_dtn[key] = new_values
+
+
+
+    # Словарь для подсчета и вывода информации на странице === --- Детальная статистика по АС --- ===
+
+
+    #Заполняем ЛИСТ ИТ-ТЕХНОЛОГИЙ
+    count_as = 0
+    for i, (key, values) in enumerate(result_as_dtn.items(), start=2):
+        count_as += 1
+
+        five_workshet[f'A{i}'] = key
+        five_workshet[f'B{i}'] = values[0]
+        five_workshet[f'C{i}'] = values[1][0]
+        five_workshet[f'D{i}'] = values[2][0]
+        five_workshet[f'E{i}'] = values[3][0]
+
+        five_workshet[f"B{i}"].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        five_workshet[f"C{i}"].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        five_workshet[f"D{i}"].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+        five_workshet[f"E{i}"].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+
+
+
+    five_workshet[f'B{count_as + 8}'].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+    five_workshet[f'A{count_as + 4}'] = 'Динамические показатели'
+    five_workshet[f'A{count_as + 5}'] = 'АС'
+    five_workshet[f'A{count_as + 7}'] = 'Доп. показатели / инфо'
+    five_workshet[f'A{count_as + 8}'] = 'На слайд, в графу "Уровень технологической надежности" ='
+
+
+    #Убрал, проверку пока все компании не дойдут до 3-го уровня надежности!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    try:
+        if realudate['Выполнено требований на 3 по ITSM и АС'][1] == realudate['Всего требований на 3 по ITSM и АС'][1] and realudate['Всего требований на 3 по ITSM и АС'][1] != 0:
+            value_four = round(realudate['Выполнено требований на 4 по ITSM и АС'][1] / realudate['Всего требований на 4 по ITSM и АС'][1], 2) + 3
+            five_workshet[f'B{count_as + 8}'] = f"{value_four:.2f}".replace('.', ',')
+        else:
+            value_three = round(realudate['Выполнено требований на 3 по ITSM и АС'][1] / realudate['Всего требований на 3 по ITSM и АС'][1], 2) + 2
+            five_workshet[f'B{count_as + 8}'] = f"{value_three:.2f}".replace('.', ',')
+    except ZeroDivisionError:
+        five_workshet[f'B{count_as + 8}'] = "3"  # Обработка деления на ноль
+
+    five_workshet[f'B{count_as + 4}'] = 'Критичное'
+    five_workshet[f'C{count_as + 4}'] = 'Высокое'
+    five_workshet[f'D{count_as + 4}'] = 'Умеренное'
+    five_workshet[f'A{count_as + 8}'].font = Font(name='Calibri', size=11, bold=True)
+    five_workshet[f'B{count_as + 8}'].font = Font(name='Calibri', size=11, bold=True)
+
+
+    # Эта часть кода  для Подсчета ОБЩЕГО КОЛИЧЕСТВА ОТКЛОНЕНИЙ ПО ВСЕМ АС ===================> на странице Детальная Статистика
+    # Итоговый словарь
+
+    new_statistics_as = {}
+    # Инициализация счетчиков
+    critical = [0]
+    high = [0]
+    moderate = [0]
+    critical_result = [0]
+    high_result = [0]
+    moderate_result = [0]
+
+
+    # Проходим по каждому элементу исходного словаря
+    for key, values in result_as_dtn.items():
+        # Пропускаем элементы, которые не содержат '/' в первом элементе
+        # Критичные
+        critical.append(values[1][0])
+        high.append(values[2][0])
+        moderate.append(values[3][0])
+        # Выполненные
+        critical_result.append(values[1][1])
+        high_result.append(values[2][1])
+        moderate_result.append(values[3][1])
+
+    # Заполнение итогового словаря
+    new_statistics_as['Критичное'] = sum(critical)
+    new_statistics_as['Высокое'] = sum(high)
+    new_statistics_as['Умеренное'] = sum(moderate)
+    new_statistics_as['Критичное выполненно'] = sum(critical_result)
+    new_statistics_as['Высокое выполненно'] = sum(high_result)
+    new_statistics_as['Умеренное выполненно'] = sum(moderate_result)
+
+    five_workshet[f"B{count_as + 5}"] = str(new_statistics_as['Критичное']) + ' / ' + str(new_statistics_as['Критичное выполненно'])
+    five_workshet[f"C{count_as + 5}"] = str(new_statistics_as['Высокое']) + ' / ' + str(new_statistics_as['Высокое выполненно'])
+    five_workshet[f"D{count_as + 5}"] = str(new_statistics_as['Умеренное']) + ' / ' + str(new_statistics_as['Умеренное выполненно'])
+
+
+
+    five_workshet[f"B{count_as + 5}"].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+    five_workshet[f"C{count_as + 5}"].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
+    five_workshet[f"D{count_as + 5}"].alignment = Alignment(horizontal="center", vertical="center", wrapText=True)
