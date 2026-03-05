@@ -1,0 +1,1500 @@
+        #TODO: Собираем информацию с Опросника согласно полям!
+        for b in ws_two.sheet_items:
+            juice_one = b.setdefault('Компания')
+            juice_two = b.setdefault('Блок / Индустрия (сокращенно)')
+            # juice_three = b.setdefault('Общий уровень надежности')
+            # juice_four = b.setdefault('Уровень технологической надежности АС')
+            # juice_five = b.setdefault('Управление технологическими инцидентами')
+            # juice_six = b.setdefault('Управление каталогом сервисов')
+            # juice_seven = b.setdefault('Управление уровнями сервисов')
+            # juice_eight = b.setdefault('Управление технологическими проблемами')
+            # juice_nine = b.setdefault('Управление технологическими рисками')
+            # juice_ten = b.setdefault('Управление инфраструктурными изменениями')
+            # juice_eleven = b.setdefault('Управление непрерывностью технологий')
+            # juice_twelve = b.setdefault('Управление доступностью технологий')
+            # juice_thirteen = b.setdefault('Управление техн. событиями и мониторингом')
+            # juice_fourteen = b.setdefault('Управление технологическими ЗНО')
+            # juice_fifteen = b.setdefault('Управление конфигурациями')
+            # juice_sixteen = b.setdefault('Управление обновлением ПО')
+            juice_seventeen = b.setdefault('Подключение к SberRadar (%)')
+            juice_eighteen = b.setdefault('Передача на опердашбоард Sber911 (%)')
+            juice_nineteen = b.setdefault('Вкючение авторегистрации')
+            juice_twenty = b.setdefault('Подключение ОЭ Sber911 (%)')
+            juice_twentyone = b.setdefault('Подключение ОЭ SberITSM (%)')
+            juice_twentytwo = b.setdefault('Исполнение поручений Комиссии по инцидентам')
+            juice_twentythree = b.setdefault('Статус по соглашению надежности')
+            # juice_twentyfour = b.setdefault('Ключевые проблемы')
+            # juice_twentyfive = b.setdefault('Динамические показатели ITSM')
+            # juice_twentysix = b.setdefault('Динамические показатели по технологиям')
+            # juice_twentyseven = b.setdefault('Уровень технологической надежности')
+            juice_twentyeight = b.setdefault('Количество ВПИ за квартал')
+
+
+
+            book_opros.setdefault(juice_one, [])
+            book_opros[juice_one].append(juice_two)
+            # book_opros[juice_one].append(juice_three)
+            # book_opros[juice_one].append(juice_four)
+            # book_opros[juice_one].append(juice_five)
+            # book_opros[juice_one].append(juice_six)
+            # book_opros[juice_one].append(juice_seven)
+            # book_opros[juice_one].append(juice_eight)
+            # book_opros[juice_one].append(juice_nine)
+            # book_opros[juice_one].append(juice_ten)
+            # book_opros[juice_one].append(juice_eleven)
+            # book_opros[juice_one].append(juice_twelve)
+            # book_opros[juice_one].append(juice_thirteen)
+            # book_opros[juice_one].append(juice_fourteen)
+            # book_opros[juice_one].append(juice_fifteen)
+            # book_opros[juice_one].append(juice_sixteen)
+            book_opros[juice_one].append(juice_seventeen)
+            book_opros[juice_one].append(juice_eighteen)
+            book_opros[juice_one].append(juice_nineteen)
+            book_opros[juice_one].append(juice_twenty)
+            book_opros[juice_one].append(juice_twentyone)
+            book_opros[juice_one].append(juice_twentytwo)
+            book_opros[juice_one].append(juice_twentythree)
+            # book_opros[juice_one].append(juice_twentyfour)
+            # book_opros[juice_one].append(juice_twentyfive)
+            # book_opros[juice_one].append(juice_twentysix)
+            # book_opros[juice_one].append(juice_twentyseven)
+            book_opros[juice_one].append(juice_twentyeight)
+
+        # print(book_opros)
+
+        if six_workshet['A2'].value in book_opros:
+            print('Компания соответствует названию в файле ====== ОБЪЕДИНЯЩИЕ ЭЛЕМЕНТЫ ========')
+            # print(book_opros[six_workshet['A2'].value])
+            #Находим значение в ячейке C2 и переводим в float, т.к. было число в ячейке 2,5 и получаем 2.5
+            def to_float(vr):
+                if isinstance(vr, str):
+                    return float(vr.replace(',', '.'))
+                return float(vr)  # сработает для int, float, numpy.float64 и т.д.
+            vals_c = to_float(six_workshet['C2'].value)
+
+            dict_assesment.setdefault(six_workshet['A2'].value, [])
+            dict_assesment[six_workshet['A2'].value].append(book_opros[six_workshet['A2'].value][0])
+            dict_assesment[six_workshet['A2'].value].append(str(six_workshet['B2'].value))
+            dict_assesment[six_workshet['A2'].value].append(str(vals_c))
+            dict_assesment[six_workshet['A2'].value].append(six_workshet['D2'].value)
+            dict_assesment[six_workshet['A2'].value].append(six_workshet['E2'].value)
+            dict_assesment[six_workshet['A2'].value].append(six_workshet['F2'].value)
+            dict_assesment[six_workshet['A2'].value].append(six_workshet['G2'].value)
+            dict_assesment[six_workshet['A2'].value].append(six_workshet['H2'].value)
+            dict_assesment[six_workshet['A2'].value].append(six_workshet['I2'].value)
+            dict_assesment[six_workshet['A2'].value].append(six_workshet['J2'].value)
+            dict_assesment[six_workshet['A2'].value].append(six_workshet['K2'].value)
+            dict_assesment[six_workshet['A2'].value].append(six_workshet['L2'].value)
+            dict_assesment[six_workshet['A2'].value].append(six_workshet['M2'].value)
+            dict_assesment[six_workshet['A2'].value].append(six_workshet['N2'].value)
+            dict_assesment[six_workshet['A2'].value].append(six_workshet['O2'].value)
+            dict_assesment[six_workshet['A2'].value].append(book_opros[six_workshet['A2'].value][1])
+            dict_assesment[six_workshet['A2'].value].append(book_opros[six_workshet['A2'].value][2])
+            dict_assesment[six_workshet['A2'].value].append(book_opros[six_workshet['A2'].value][3])
+            dict_assesment[six_workshet['A2'].value].append(book_opros[six_workshet['A2'].value][4])
+            dict_assesment[six_workshet['A2'].value].append(book_opros[six_workshet['A2'].value][5])
+            dict_assesment[six_workshet['A2'].value].append(book_opros[six_workshet['A2'].value][6])
+            dict_assesment[six_workshet['A2'].value].append(book_opros[six_workshet['A2'].value][7])
+
+
+            if final_answer == '' or final_answer is None:
+                dict_assesment[six_workshet['A2'].value].append("Проблема 1; Проблема 2; Проблема 3; Проблема 4; Проблема 5")
+            else:
+                dict_assesment[six_workshet['A2'].value].append(final_answer)
+            dict_assesment[six_workshet['A2'].value].append(six_workshet['Q2'].value)
+            dict_assesment[six_workshet['A2'].value].append(six_workshet['R2'].value)
+            dict_assesment[six_workshet['A2'].value].append(six_workshet['S2'].value)
+            dict_assesment[six_workshet['A2'].value].append(book_opros[six_workshet['A2'].value][8])
+
+
+        else:
+            print('Компания не соответствует названию в файле ====== ОБЪЕДИНЯЩИЕ ЭЛЕМЕНТЫ ========')
+            sys.exit(0)
+
+            for key in dict_assesment:
+                if isinstance(dict_assesment[key], list):  # Проверяем, что значение — список
+                    dict_assesment[key] = [
+                        item.replace('\n', '') if isinstance(item, str) else item
+                        for item in dict_assesment[key]
+                    ]
+
+
+        # print(dict_assesment)
+        # for key in book_opros:
+        #     if isinstance(book_opros[key], list):  # Проверяем, что значение — список
+        #         book_opros[key] = [
+        #             item.replace('\n', '') if isinstance(item, str) else item
+        #             for item in book_opros[key]
+        #         ]
+
+
+        #=============================================СОЗДАНИЕ СЛАЙДА===========================================================
+
+
+        dict_blocks = {"EdTech": "Индустрия EdTech",
+                       "E-Health": "Индустрия E-Health",
+                       "GRC": "Блок «GR, правовые вопросы, комплаенс и ДЗО»",
+                       "Media & Ads": "Индустрия «Media & Ads»",
+                       "SBI": "Блок «Sberbank International»",
+                       "Виртуальное": "«Виртуальное ДЗО»",
+                       "ДДиРС B2C": "Департамент данных и рекомендательных систем B2C",
+                       "ДЗиС": "Департамент «Занять и сберегать»",
+                       "ДЗОК": "Департамент «Заботы о клиентах»",
+                       "ДРПА": "Департамент по работе с проблемными активами",
+                       "КИБ": "Блок «КИБ»",
+                       "ЛиК": "Блок «Люди и Культура»",
+                       "Подразделения вне блоков B2C": "Подразделения вне блоков B2C",
+                       "Развитие клиентского опыта B2C": "Блок «Развитие клиентского опыта B2C»",
+                       "Риски": "Блок «Риски»",
+                       "Сервисы": "Блок «Сервисы»",
+                       "Сеть продаж": "Блок «Сеть продаж»",
+                       "Строительство": "Блок «Строительство»",
+                       "Технологии": "Блок «Технологии»",
+                       "ТР": "Блок «Технологическое развитие»",
+                       "Транзакционный банкинг B2C": "Блок «Транзакционный банкинг B2C»",
+                       "УБ": "Блок «Управление благосостоянием»",
+                       "ЦПНБ": "Центр Перспективных Направлений Бизнеса"
+                       }
+
+
+        # proverka_vyborki = input('------------ТЕСТ------------ ')
+
+        for key, value in dict_assesment.items():
+            problems_text = value[22]
+            # Проверяем тип данных
+            if isinstance(problems_text, str):
+                # Если это строка - разделяем по точкам с запятой
+                problems_list = problems_text.split(';')
+                problems_list = [problem.strip() for problem in problems_list]
+            elif isinstance(problems_text, list):
+                # Если это уже список - просто используем его
+                problems_list = problems_text
+            else:
+                # Если ни строка, ни список - создаем пустой список
+                problems_list = []
+
+            # print(problems_list)  # Для отладки
+
+            element = value[23]  # '121 / 121, 117 / 117, 26 / 26'
+            parts = element.split(',')  # Делим строку по запятым
+
+            # Проверяем, что частей достаточно
+            if len(parts) >= 3:
+                result_kritik_itsm = parts[0].strip()  # '121 / 121'
+                result_visok_itsm = parts[1].strip()  # '117 / 117'
+                result_umeren_itsm = parts[2].strip()  # '26 / 26'
+            else:
+                result_kritik_itsm = "0 / 0"
+                result_visok_itsm = "0 / 0"
+                result_umeren_itsm = "0 / 0"
+
+
+            element_techno = value[24]
+            parts_techno = element_techno.split(',')  # Делим строку по запятым
+
+            # Проверяем, что частей достаточно
+            if len(parts_techno) >= 3:
+                result_kritik_as = parts_techno[0].strip()  # '121 / 121'
+                result_visok_as = parts_techno[1].strip()  # '117 / 117'
+                result_umeren_as = parts_techno[2].strip()  # '26 / 26'
+            else:
+                result_kritik_as = "0 / 0"
+                result_visok_as = "0 / 0"
+                result_umeren_as = "0 / 0"
+
+
+            # Получаем значения для замены из словаря
+            # Функция для обработки всех текстовых элементов
+            def replace_text_in_shape(shape, data):
+                if shape.has_text_frame:
+                    text_frame = shape.text_frame
+                    for paragraph in text_frame.paragraphs:
+                        for key, value in data.items():
+                            pattern = rf'\b({re.escape(key)})\b'
+                            matches = re.findall(pattern, paragraph.text)
+                            if matches:
+                                for run in paragraph.runs:
+                                    if key in run.text:
+                                        try:
+                                            # Сохраняем оригинальное форматирование
+                                            original_font_name = run.font.name
+                                            original_font_size = run.font.size
+                                            original_font_color = run.font.color
+
+                                            # Заменяем текст
+                                            run.text = re.sub(pattern, value, run.text)
+                                            # Восстанавливаем форматирование
+                                            run.font.name = original_font_name
+                                            run.font.size = original_font_size
+                                            if original_font_color and original_font_color.type == 1:  # MSO_COLOR_TYPE.RGB
+                                                run.font.color.rgb = original_font_color.rgb
+                                        except Exception as e:
+                                            print(f'Ошибка при замене текста: {e}')
+
+                # Обработка таблиц
+                if shape.has_table:
+                    table = shape.table
+                    for row in table.rows:
+                        for cell in row.cells:
+                            replace_text_in_cell(cell, data)
+            # Специальная функция для работы с ячейками таблицы
+            def replace_text_in_cell(cell, data):
+                if cell.text_frame:
+                    text_frame = cell.text_frame
+                    for paragraph in text_frame.paragraphs:
+                        for key, value in data.items():
+                            pattern = rf'\b({re.escape(key)})\b'
+                            matches = re.findall(pattern, paragraph.text)
+                            if matches:
+                                for run in paragraph.runs:
+                                    if key in run.text:
+                                        try:
+                                            # Сохраняем оригинальное форматирование
+                                            original_font_name = run.font.name
+                                            original_font_size = run.font.size
+                                            original_font_color = run.font.color
+
+                                            # Заменяем текст
+                                            run.text = re.sub(pattern, value, run.text)
+
+                                            # Восстанавливаем форматирование
+                                            run.font.name = original_font_name
+                                            run.font.size = original_font_size
+                                            if original_font_color and original_font_color.type == 1:  # MSO_COLOR_TYPE.RGB
+                                                run.font.color.rgb = original_font_color.rgb
+                                        except Exception as e:
+                                            print(f'Ошибка при замене текста: {e}')
+            # Открываем существующий шаблон PowerPoint
+
+
+
+            open_prezent_slide = os.path.join(os.path.dirname(__file__), 'no_hand', 'template.pptx')
+            presentation = Presentation(open_prezent_slide)
+
+            # Определяем данные для вставки
+
+
+            data = {
+                'name': 'name_dzo',
+                'subtitle ': 'name_dzo_two',
+                'data_as': 'text_dzo',
+                'num': 'all_number',
+                'assesment':'Оценка',
+                'itas': 'Оценка всех ас',
+                'block':'Блок',
+                'itsmkall':'Критичные отклонения по ITSM',
+                'itsmuall':'Умеренные отклонения по ITSM',
+                'itshight':'Высокие отклонения по ITSM',
+                'askall':'Критичные отклонения по АС',
+                'asvall':'Высокие отклонения  по АС',
+                'asuall':'Умеренные отклонения по АС',
+                'answer1':'Критичное отклонение 1',
+                'answer2':'Критичное отклонение 2',
+                'answer3':'Критичное отклонение 3',
+                'answer4':'Критичное отклонение 4',
+                'answer5':'Критичное отклонение 5',
+                'q_ozenka':'Оценка',
+                'est_profile':'Profile',
+                'sberradar': 'Подключение к SberRadar',
+                'sber911': 'Подключение к опердашбоард Sber911',
+                'raschet1':'Расчетная мощность АС',
+                'oesber911': 'Подключение ОЭ Sber911',
+                'sberitsm':'Подключение ОЭ SberITSM',
+                'sogdtn': 'Статус по соглашению надежности',
+                'poruchenie': 'Исполнение поручений Комиссии по инцидентам',
+                'inzidenton':'Вкючение авторегистрации инцидентов',
+                'vpi': 'Количество ВПИ за квартал'
+            }
+
+            data['name'] = key
+            if value[0] in dict_blocks:
+                data['block'] = dict_blocks[value[0]]
+            else:
+                data['block'] = value[0]
+
+            # for id_block, name_block in dict_blocks.items():
+            #     print(id_block,'=========',value[0])
+            #
+            #     if id_block == value[0]:
+            #         data['block'] = name_block
+            #     else:
+            #         data['block'] = value[0]
+
+            data['subtitle'] = key
+            data['itsmkall'] = result_kritik_itsm
+            data['itshight'] = result_visok_itsm
+            data['itsmuall'] = result_umeren_itsm
+
+            # # Получаем текущую дату
+            # current_date = datetime.date.today()
+            # # Определяем название папки на основе текущей даты
+            # quarter = (current_date.month - 1) // 3 + 1
+            # year = current_date.year
+            # quarter_folder = f"Q{quarter} {year}"
+
+            # =============Поиск и удаление картинки на презентации если количество отклонений будет меньше или вовсе не будет=================
+            # Открываем презентацию
+            # Перебираем все слайды
+
+
+            # Путь к изображению
+            NO_HAND_IMAGE = os.path.abspath(os.path.join('no_hand', 'picture.png'))
+
+            # Проверка, что файл существует
+            if not os.path.exists(NO_HAND_IMAGE):
+                raise FileNotFoundError(f"Файл не найден: {NO_HAND_IMAGE}")
+
+            # Словарь с метками и путями к изображениям
+            data_image = {
+                'img1': NO_HAND_IMAGE,
+                'img2': NO_HAND_IMAGE,
+                'img3': NO_HAND_IMAGE,
+                'img4': NO_HAND_IMAGE,
+                'img5': NO_HAND_IMAGE
+            }
+
+            slide_zero = presentation.slides[0]
+
+            # Проходим по всем фигурам на слайде
+            for shape in slide_zero.shapes:
+                if shape.has_table:
+                    table = shape.table
+                    table_left = shape.left
+                    table_top = shape.top
+
+                    # Сначала обрабатываем все проблемы
+                    problems_list = [p.strip() for p in problems_text.split(';') if p.strip()]
+
+                    # Создаем словарь только для существующих проблем
+                    data_image = {}
+                    for i in range(1, 6):
+                        if i <= len(problems_list):
+                            data[f'answer{i}'] = problems_list[i-1]
+                            data_image[f'img{i}'] = NO_HAND_IMAGE
+
+                        else:
+                            data[f'answer{i}'] = ""
+
+                    # Теперь проходим по ячейкам таблицы
+                    for row_idx, row in enumerate(table.rows):
+                        for col_idx, cell in enumerate(row.cells):
+                            cell_text = cell.text.strip()
+
+                            # Вставляем изображение только если есть соответствующая проблема
+                            if cell_text in data_image:
+                                cell_left = table_left + sum(table.columns[i].width for i in range(col_idx))
+                                cell_top = table_top + sum(table.rows[i].height for i in range(row_idx))
+                                cell_width = table.columns[col_idx].width
+                                cell_height = table.rows[row_idx].height
+
+                                cell.text = ""  # Очищаем ячейку
+                                cell.text_frame.vertical_anchor = MSO_ANCHOR.MIDDLE  # Центрируем содержимое
+
+
+                                # Открываем изображение и получаем его размеры
+                                # Размер изображения — 50% от ширины ячейки
+
+                                img_width = cell_width * 0.5
+                                # Рассчитываем высоту изображения, сохраняя пропорции
+
+                                with Image.open(data_image[cell_text]) as img:
+                                    original_width, original_height = img.size
+                                    aspect_ratio = original_height / original_width
+                                    img_height = img_width * aspect_ratio
+
+                                # Добавляем изображение по центру
+                                pic = slide_zero.shapes.add_picture(
+                                    data_image[cell_text],
+                                    cell_left + (cell_width - img_width) / 2,  # Центр по X
+                                    cell_top + (cell_height - img_height) / 2,  # Центр по Y
+                                    width=img_width,
+                                    height=img_height
+                                )
+                            elif cell_text.startswith('img') and cell_text not in data_image:
+                                # Очищаем ячейки, где должны быть изображения, но проблем нет
+                                cell.text = ""
+                                # Устанавливаем вертикальное выравнивание по центру для ячейки
+
+            #*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+            #*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+
+            #=================================Прямоугольник 34(Изменение динамики по Уровням)====================================
+
+            def apply_color_to_text(shape, target_texts, colors):
+                if not shape.has_text_frame:
+                    return
+
+                for paragraph in shape.text_frame.paragraphs:
+                    for run in paragraph.runs:
+                        text = run.text.strip().lower()
+                        for i, target_text in enumerate(target_texts):
+                            if target_text.lower() in text.replace(" ", "").replace("\n", "").replace("\t", ""):
+                                # Создаём новый цветовой объект и присваиваем его
+                                run.font.color.rgb = colors[i]
+                                # print(f"Цвет изменён для текста '{target_text}' в фигуре '{shape.name}'.")
+
+            # Целевые тексты и их цвета
+            target_texts = ["assessment", "num"]
+            # Преобразуем значение в float один раз
+            try:
+                value_float = float(value[1])
+            except (ValueError, IndexError):
+                value_float = 0.0  # Значение по умолчанию при ошибке
+
+            # Инициализируем значения по умолчанию (желтый)
+            data['num'] = f"{value_float:.2f}"  # Форматируем с двумя знаками после запятой
+            data['assessment'] = '«Оцененный» -'
+            colors = [RGBColor(238, 237, 25), RGBColor(238, 237, 25)]
+            # Проверяем условия в правильном порядке (от строгих к более общим)
+            if value[1] == '0':
+                data['num'] = '0.00'
+                data['assessment'] = '«Черный ящик» -'
+                colors = [RGBColor(227, 18, 19), RGBColor(227, 18, 19)]  # Красный
+            elif value_float < 2:
+                data['assessment'] = '«Декларативный» -'
+                colors = [RGBColor(233, 178, 26), RGBColor(233, 178, 26)]  # Оранжевый
+            elif 2 <= value_float < 3:
+                data['assessment'] = '«Оцененный» -'  # Оставляем по умолчанию
+                colors = [RGBColor(238, 237, 25), RGBColor(238, 237, 25)]  # Желтый
+            elif 3 <= value_float < 4:
+                data['assessment'] = '«Готовность к эксплуатации» -'
+                colors = [RGBColor(130, 187, 72), RGBColor(130, 187, 72)]  # Зеленый
+            elif value_float == 4:
+                data['assessment'] = '«Готовность к развитию» -'
+                colors = [RGBColor(17, 160, 81), RGBColor(17, 160, 81)]  # Темно-зеленый
+
+
+
+            # Применяем изменения
+            for slide in presentation.slides:
+                for shape in slide.shapes:
+                    if shape.name == "Прямоугольник 34":
+                        # print(f"Найдена фигура: {shape.name}")
+                        apply_color_to_text(shape, target_texts, colors)
+
+
+
+
+            #=============================================================================
+
+            # Проверяем, что value[2] существует и непустой
+
+
+            if len(value) > 2:
+                str_value = value[2].strip()  # Удаляем пробелы
+
+                if not str_value:  # Если строка пустая после strip()
+                    # print(key)
+                    data['itas'] = ""
+                else:
+                    try:
+                        itas_value = float(str_value)
+                        data['itas'] = f"{itas_value:.2f}"
+                    except ValueError:
+                        data['itas'] = "0.00"
+            else:
+                data['itas'] = "0.00"  # Если value слишком короткий
+
+            data['askall'] = result_kritik_as
+            data['asvall'] = result_visok_as
+            data['asuall'] = result_umeren_as
+            # data['data_as'] = data_assesment
+            # data['q_ozenka'] = quarter_folder
+            if value[25]:
+                data['est_profile'] = '(' + str(value[25]) + ')'
+            else:
+                data['est_profile'] = value[25]
+            data['sogdtn'] = value[21]
+
+
+
+            if value[15]:  # Проверяем, что value[15] не пустая строка
+                try:
+                    data['sberradar'] = str(round(float(value[15]))) + '%'
+                except ValueError:
+                    data['sberradar'] = value[15]
+            else:
+                data['sberradar'] = '0%'
+
+
+            if value[16]:  # Проверяем, что value[16] не пустая строка
+                try:
+                    data['sber911'] = str(round(float(value[16]))) + '%'
+                except ValueError:
+                    data['sber911'] = value[16]
+            else:
+                data['sber911'] = '0%'
+
+
+            data['inzidenton'] = value[17]
+
+
+            if value[18]:  # Проверяем, что value[18] не пустая строка
+                try:
+                    data['oesber911'] = str(round(float(value[18]))) + '%'
+                except ValueError:
+                    data['oesber911'] = value[18]
+            else:
+                data['oesber911'] = '0%'
+
+
+            if value[19]:  # Проверяем, что value[19] не пустая строка
+                try:
+                    data['sberitsm'] = str(value[19])
+                except ValueError:
+                    data['sberitsm'] = value[19]
+            else:
+                data['sberitsm'] = '0'
+
+
+            if value[20]:  # Проверяем, что value[20] не пустая строка
+                try:
+                    data['poruchenie'] = str(round(float(value[20]))) + '%'
+                except ValueError:
+                    data['poruchenie'] = value[20]
+            else:
+                data['poruchenie'] = '0%'
+
+
+
+            if value[26]: # Проверяем, что value[26] не пустая строка
+                try:
+                    data['vpi'] = (value[26])
+                except ValueError:
+                    data['vpi'] = value[26]
+            else:
+                data['vpi'] = '0'
+
+
+
+
+            if value[1] == '0':
+                data['num'] = '0.00'
+                data['assessment'] = '«Черный ящик» -'
+                colors = [RGBColor(227, 18, 19), RGBColor(227, 18, 19)]  # Красный
+
+
+
+
+
+            # Находим первый слайд
+            slide = presentation.slides[0]
+
+            # Обрабатываем все фигуры на слайде
+            for shape in slide.shapes:
+                replace_text_in_shape(shape, data)
+
+            # Исходный словарь
+            dict_old = {
+                'Управление технологическими инцидентами': '0%',
+                'Управление каталогом сервисов': '0%',
+                'Управление уровнями сервисов': '0%',
+                'Управление технологическими проблемами': '0%',
+                'Управление технологическими рисками': '0%',
+                'Управление инфраструктурными изменениями': '0%',
+                'Управление непрерывностью технологий': '0%',
+                'Управление доступностью технологий': '0%',
+                'Управление техн. событиями и мониторингом': '0%',
+                'Управление ТЗНО': '0%',
+                'Управление конфигурациями': '0%',
+                'Управление обновлением ПО': '0%'
+            }
+
+            dict_old['Управление технологическими инцидентами'] = value[3]
+            dict_old['Управление каталогом сервисов'] = value[4]
+            dict_old['Управление уровнями сервисов'] = value[5]
+            dict_old['Управление технологическими проблемами'] = value[6]
+            dict_old['Управление технологическими рисками'] = value[7]
+            dict_old['Управление инфраструктурными изменениями'] = value[8]
+            dict_old['Управление непрерывностью технологий'] = value[9]
+            dict_old['Управление доступностью технологий'] = value[10]
+            dict_old['Управление техн. событиями и мониторингом'] = value[11]
+            dict_old['Управление ТЗНО'] = value[12]
+            dict_old['Управление конфигурациями'] = value[13]
+            dict_old['Управление обновлением ПО'] = value[14]
+
+            # Фильтруем словарь, удаляя категории с отсутствующими данными
+            filtered_dict = {k: v for k, v in dict_old.items() if v != '-'}
+
+            # Поиск первой диаграммы на слайде
+            chart_shape = None
+            for shape in slide.shapes:
+                if shape.has_chart:
+                    chart_shape = shape
+                    chart = shape.chart
+                    break
+
+            if chart:
+                # Создаем новый объект ChartData
+                # Настройка размеров диаграммы перед обновлением данных
+                chart_data = ChartData()
+
+                # Извлекаем категории из отфильтрованного словаря
+                categories = list(filtered_dict.keys())
+                values = []
+
+                # Функция для безопасного преобразования значения в число
+                def safe_convert_to_decimal(value):
+                    if value is None:
+                        return 0  # Возвращаем 0, если значение None
+                    if not isinstance(value, str):
+                        return 0  # Возвращаем 0, если значение не строка
+                    try:
+                        # Пытаемся преобразовать проценты в десятичные числа
+                        return float(value.strip('%')) / 100
+                    except ValueError:
+                        return 0  # Возвращаем 0, если преобразование не удалось
+
+                # Преобразуем значения в числовой формат
+                for category in categories:
+                    valurt = filtered_dict[category]
+                    valurt = safe_convert_to_decimal(valurt)  # Безопасное преобразование
+                    values.append(valurt)
+
+                # Теперь categories и values готовы для использования в ChartData
+                # print("Категории:", categories)
+                # print("Значения:", values)
+                # print(f'Слайд компании {key} - ГОТОВ!')
+
+                # Заполняем данные для новой диаграммы
+                chart_data.categories = categories
+                chart_data.add_series('', values)  # Название серии можно изменить
+
+                # Применяем новые данные к диаграмме
+                chart.replace_data(chart_data)
+
+                # Настраиваем формат меток данных для отображения в процентах
+                for series in chart.series:
+                    series.data_labels.show_value = True  # Показываем значения на диаграмме
+                    series.data_labels.number_format = '0%'  # Устанавливаем формат процентов
+
+                # Вычисляем, насколько нужно сжать диаграмму
+                original_height = chart_shape.height  # Исходная высота диаграммы
+                original_categories_count = len(dict_old)  # Исходное количество категорий
+                filtered_categories_count = len(filtered_dict)  # Количество категорий после фильтрации
+
+                # Если количество категорий уменьшилось, сжимаем диаграмму
+                if filtered_categories_count < original_categories_count:
+                    # Вычисляем коэффициент сжатия
+                    compression_ratio = filtered_categories_count / original_categories_count
+                    # Уменьшаем высоту диаграммы
+                    new_height = int(original_height * compression_ratio)
+                    chart_shape.height = new_height
+
+
+
+            else:
+                print("Диаграмма не найдена.")
+
+
+
+            def safe_format_value(value):
+                """Безопасно форматирует значение с цветом, возвращая всегда кортеж (text, color)"""
+                try:
+                    # Обработка None и пустых значений
+                    if value is None or str(value).strip() == '':
+                        return "-", RGBColor(128, 128, 128)  # Серый для пустых значений
+
+                    str_val = str(value).strip()
+
+
+                    # Специальные текстовые случаи
+                    special_cases = {
+                        'исключен': ('Исключен', RGBColor(0, 176, 80)),  # Зеленый
+                        'включено': ('Включено', RGBColor(0, 176, 80)),  # Зеленый
+                        'подписано': ('Подписано', RGBColor(0, 176, 80)),  # Зеленый
+                        'да': ('Да', RGBColor(0, 176, 80)),
+                        'yes': ('Yes', RGBColor(0, 176, 80)),
+                        'нет': ('Нет', RGBColor(255, 0, 0)),  # Красный
+                        'не подписано': ('Не подписано', RGBColor(255, 0, 0)),  # Красный
+                        'отказ': ('Отказ', RGBColor(255, 0, 0)),  # Красный
+                        'не подключен': ('Не подключен', RGBColor(255, 0, 0)),  # Красный
+                        'отсутствует': ('Отсутствует', RGBColor(255, 0, 0)),  # Красный
+                        'no': ('No', RGBColor(255, 0, 0)),
+                        'n/a': ('N/A', RGBColor(128, 128, 128)),  # Серый
+                        'долгое подписание': ('Долгое подписание', RGBColor(255, 255, 0)),  # Желтый
+                        'в процессе': ('В процессе', RGBColor(255, 255, 0)),  # Желтый
+                        '«оцененный»': ('«Оцененный»', RGBColor(255, 255, 0)),  # Желтый
+                        'в работе': ('В работе', RGBColor(255, 255, 0)),  # Желтый
+
+
+
+                        # 'aaa': ('aaa', RGBColor(255, 0, 0)),  # Красный
+
+                        '-': ('-', RGBColor(128, 128, 128)),  # Серый
+                    }
+
+                    lower_val = str_val.lower()
+                    if lower_val in special_cases:
+                        return special_cases[lower_val]
+
+                    # Обработка процентов
+                    if '%' in str_val:
+                        num_str = str_val.replace('%', '')
+                    else:
+                        num_str = str_val
+
+
+                    num = float(num_str)
+                    num = max(0, min(100, num))  # Ограничиваем 0-100
+
+                    # Градиент цветов
+                    if num <= 50:
+                        # От красного (0%) до желтого (50%)
+                        red = 255
+                        green = int(255 * (num / 50))
+                        blue = 0
+                    else:
+                        # От желтого (50%) до зеленого (100%)
+                        red = int(255 * (1 - (num - 50) / 50))
+                        # green = int(255 - (255 - 176) * ((num - 50) / 50))  # Корректируем формулу для green
+                        green = int(round(255 - (255 - 176) * ((num - 50) / 50)))  # Корректируем формулу для green
+                        blue = 0
+
+                        # Убедимся, что при num = 100 green = 176
+                    if num == 100:
+                        red = 0
+                        green = 176
+                        blue = 80
+
+                    return f"{int(round(num))}%", RGBColor(red, green, blue)
+
+                except Exception as e:
+                    # Если что-то пошло не так, возвращаем оригинальное значение без цвета
+                    return str(value), None
+
+
+            def apply_to_cell(cell, value):
+                """Безопасное применение значения к ячейке с обработкой ошибок"""
+                try:
+                    # Получаем текст и цвет
+                    text, color = safe_format_value(value)
+
+                    # Очищаем ячейку
+                    text_frame = cell.text_frame
+                    text_frame.clear()
+
+                    # Устанавливаем текст
+                    p = text_frame.paragraphs[0]
+                    run = p.add_run()
+                    run.text = text
+
+                    # Устанавливаем цвет если есть
+                    if color:
+                        run.font.color.rgb = color
+
+                    run.font.name = "SB Sans Text"
+                    run.font.bold = False
+                    run.font.size = Pt(11)         # Устанавливаем размер шрифта
+
+
+                except Exception as e:
+                    print(f"Ошибка при форматировании ячейки: {str(e)}")
+                    cell.text = str(value)  # Просто вставляем текст как ест
+
+            # Форматируем значение
+            # text, color = safe_format_value(data['sber911'])
+
+
+            def safe_format_sberitsm(value):
+                """Безопасно форматирует значение с цветом, возвращая всегда кортеж (text, color)"""
+                str_val = str(value).strip() if value is not None else ''
+
+                # Значение по умолчанию (если ни одно условие не сработает)
+                color = RGBColor(0, 0, 0)  # Черный по умолчанию
+                display_text = str_val  # По умолчанию исходное значение
+
+                try:
+                    if str_val == 'Исключен':
+                        color = RGBColor(17, 160, 81)  # Темно-зеленый
+                        display_text = 'Исключен'
+                    else:
+                        int_val = int(str_val) if str_val else 0  # Преобразуем в int, если не пусто
+
+                        if int_val == 0:
+                            color = RGBColor(227, 18, 19)  # Красный
+                        elif int_val == 1:
+                            color = RGBColor(233, 178, 26)  # Оранжевый
+                        elif int_val == 2:
+                            color = RGBColor(238, 237, 25)  # Желтый
+                        elif int_val == 3:
+                            color = RGBColor(130, 187, 72)  # Зеленый
+                        elif int_val == 4:
+                            color = RGBColor(17, 160, 81)  # Темно-зеленый
+
+                        display_text = str(int_val)  # Форматируем как строку без лишних символов
+
+                except (ValueError, TypeError):
+                    # Если преобразование не удалось, оставляем значения по умолчанию
+                    pass
+
+                return display_text, color
+
+
+            def apply_to_cell_vpi_sberitsm(cell, value):
+                """Безопасное применение значения к ячейке с обработкой ошибок"""
+                try:
+                    # Получаем текст и цвет
+                    text, color = safe_format_sberitsm(value)
+                    # Очищаем ячейку
+                    text_frame = cell.text_frame
+                    text_frame.clear()
+                    # Устанавливаем текст
+                    p = text_frame.paragraphs[0]
+                    run = p.add_run()
+                    run.text = text
+                    # Устанавливаем цвет если есть
+                    if color:
+                        run.font.color.rgb = color
+                    run.font.name = "SB Sans Text"
+                    run.font.bold = False
+                    run.font.size = Pt(11)         # Устанавливаем размер шрифта
+
+                except Exception as e:
+                    print(f"Ошибка при форматировании ячейки: {str(e)}")
+                    cell.text = str(value)  # Просто вставляем текст как есть
+
+
+
+
+
+            # Две нижние фуннкции для таблицы 2 а именнно для ------  КОЛИЧЕСТВА впи ЗА КВАРТАЛ  ---------
+            def safe_format_vpi(value):
+                """Безопасно форматирует значение с цветом, возвращая всегда кортеж (text, color)"""
+                str_val = str(value).strip()
+
+                if int(str_val) == 0:
+                    color = RGBColor(0, 176, 80)
+                else:
+                    color = RGBColor(255, 0, 0)
+
+                return f"{int(str_val)}", color  # Возвращаем текст и объект RGBColor
+
+
+            def apply_to_cell_vpi(cell, value):
+                """Безопасное применение значения к ячейке с обработкой ошибок"""
+                try:
+                    # Получаем текст и цвет
+                    text, color = safe_format_vpi(value)
+                    # Очищаем ячейку
+                    text_frame = cell.text_frame
+                    text_frame.clear()
+                    # Устанавливаем текст
+                    p = text_frame.paragraphs[0]
+                    run = p.add_run()
+                    run.text = text
+                    # Устанавливаем цвет если есть
+                    if color:
+                        run.font.color.rgb = color
+                    run.font.name = "SB Sans Text"
+                    run.font.bold = False
+                    run.font.size = Pt(11)         # Устанавливаем размер шрифта
+
+                except Exception as e:
+                    print(f"Ошибка при форматировании ячейки: {str(e)}")
+                    cell.text = str(value)  # Просто вставляем текст как есть
+
+
+
+            for shape in slide.shapes:
+                if shape.has_table and shape.name == "Таблица 2":
+                    target_table = shape.table
+                    apply_to_cell(target_table.cell(2, 1), data['sogdtn'])
+                    apply_to_cell(target_table.cell(3, 1), data['sberradar'])
+                    apply_to_cell(target_table.cell(4, 1), data['sber911'])
+                    apply_to_cell(target_table.cell(5, 1), data['inzidenton'])
+                    apply_to_cell(target_table.cell(6, 1), data['oesber911'])
+                    apply_to_cell_vpi_sberitsm(target_table.cell(7, 1), data['sberitsm'])
+                    apply_to_cell(target_table.cell(8, 1), data['poruchenie'])
+                    apply_to_cell_vpi(target_table.cell(9, 1), data['vpi'])
+
+
+            # open_prezent_slide = os.path.join(os.path.dirname(__file__), 'no_hand', 'template.pptx')
+            # presentation = Presentation(open_prezent_slide)
+
+            # Функция для изменения цвета текста в зависимости от значения ___ Значение ITAS___ в Уровень технологической надежности
+            def apply_color_to_table_cell(table, row_idx, col_idx, color):
+                """Изменяет цвет текста в указанной ячейке таблицы"""
+                cell = table.cell(row_idx, col_idx)
+                for paragraph in cell.text_frame.paragraphs:
+                    for run in paragraph.runs:
+                        run.font.color.rgb = color
+            # print(key, value[2])
+            # Обработка ITAS
+
+            if len(value) > 2 and value[2].strip():
+
+                try:
+                    itas_value = float(value[2])
+                    data['itas'] = f"{itas_value:.2f}"
+
+                    # Найдем таблицу один раз
+                    table_found = None
+                    for slide in presentation.slides:
+                        for shape in slide.shapes:
+                            if shape.has_table and shape.name == "Таблица 2":
+                                table_found = shape.table
+                                break
+                        if table_found:
+                            break
+
+                    if table_found:
+                        if itas_value < 2:
+                            apply_color_to_table_cell(table_found, 1, 1, RGBColor(255, 0, 0))  # Красный
+                        elif 1 < itas_value < 3:
+                            apply_color_to_table_cell(table_found, 1, 1, RGBColor(255, 255, 0))  # Желтый
+                        elif 3 <= itas_value < 4:
+                            apply_color_to_table_cell(table_found, 1, 1, RGBColor(130, 187, 72))  # Зеленый
+                        elif itas_value == 4:
+                            apply_color_to_table_cell(table_found, 1, 1, RGBColor(17, 160, 81))  # Темно-зеленый
+
+                except ValueError:
+                    data['itas'] = "0.00"
+                    # Можно также установить цвет по умолчанию при ошибке
+                    # apply_color_to_table_cell(table_found, 1, 1, DEFAULT_COLOR)
+
+            # # Сохраняем презентацию
+            saves = os.path.join(os.path.dirname(__file__), f'{key}' + '.pptx')
+            presentation.save(saves)
+
+
+    else:
+        if os.path.exists(save):
+            k = f'{name_company}'
+            print(f"Файл '{k}' уже существует.")
+            # print(f"Файл '{save}'\Отчет_по_ITSM_AS.xlsx' уже существует.")
+            # Запрашиваем у пользователя, хочет ли он перезаписать файл
+            while True:
+                perazapis = input("Вы хотите перезаписать файл Отчет_по_ITSM_AS.xlsx? (y/n): ")
+                if perazapis == 'n':
+                    print(f"Файл '{k} не перезаписан.")
+                    break
+                elif perazapis == 'y':
+                    wb.save(save)
+                    print(f"Файл '{k} перезаписан.")
+                    print('=====  Отчет сформирован  =====')
+                    break
+                else:
+                    print("Неверный ответ. Пожалуйста, введите 'y' для перезаписи или 'n' для отказа.")
+        else:
+            wb.save(save)
+            print('=====  Отчет сформирован  =====')
+
+
+#============================================Конец Генерация слайда ========================================================================
+
+
+
+
+
+
+
+#=======================================================================================================================
+if automat_dzo == 2:
+    ws = Worksheet()
+    ws_two = Worksheet()
+    ws_as = Worksheet()
+    ws_itsm = Worksheet()
+    ws_as_code_dtn = Worksheet()
+    ws_code_baza_itsm = Worksheet()
+    ws_oprosnik = Worksheet()
+
+
+
+    script_dir_all = os.path.abspath(os.path.dirname(__file__))
+    mas_files_list = []
+    keywords = ["Опросник", "ЕДК", "ЕРО", "База_знаний"]
+
+    file_list = glob.glob(os.path.join(script_dir_all, '*.xlsx'))
+    for file in file_list:
+
+        if any(keyword in file for keyword in keywords):
+            mas_files_list.append(file)
+
+    oprosnik_files = [os.path.basename(file) for file in mas_files_list if 'Опросник' in os.path.basename(file)]
+    baza_znanii_files = [os.path.basename(file) for file in mas_files_list if 'База_знаний' in os.path.basename(file)]
+    edk_files = [os.path.basename(file) for file in mas_files_list if 'ЕДК' in file or 'ЕРО' in os.path.basename(file)]
+
+    # Теперь формируем полные пути к файлам
+    baza_ero = "".join([os.path.join(script_dir_all, file) for file in edk_files])  # адрес ЕРО
+    opros = "".join([os.path.join(script_dir_all, file) for file in oprosnik_files])  # адрес опросника
+    znaniya = "".join([os.path.join(script_dir_all, file) for file in baza_znanii_files])  # адрес Базы знаний
+
+
+
+
+
+
+
+    script_dir = os.path.abspath(os.path.dirname(__file__))
+    adress_as = os.path.join(script_dir, 'AS')
+    print()
+    print('-------- Формирую отчет --------')
+    print()
+    warnings.simplefilter("ignore")
+
+    # Обработка файлов ЕДК/ЕРО
+    if edk_files:
+        ws.xlsx_to_dict(path=baza_ero, select_sheet='Единая дорожная карта')
+    else:
+        print("⚠ Ошибка: Нет файлов ЕДК/ЕРО для обработки!")
+
+
+    def check_version(filepath):
+        workbook = openpyxl.load_workbook(filepath)
+        worksheet = workbook['Надёжность']
+        first_row = worksheet[1]
+        mas_ver_dtn = []
+        for cell in first_row:
+            if cell.value is not None:
+                mas_ver_dtn.append(cell.value)
+        # Получение ключа страховщика
+        insurer_key = next(item for item in mas_ver_dtn if item not in ['ОПРОСНИК\nпо оценке зрелости ITSM-процессов', 'версия опросника:'])
+
+        # Получение ключа версии опросника
+        pattern = r'\d+\.\d+\.\d+\.\d+\.\d+'
+        version_key = next(item for item in mas_ver_dtn if re.match(pattern, str(item)))
+        # Создание нового словаря
+        result = {
+            'ОПРОСНИК\nпо оценке зрелости ITSM-процессов': insurer_key,
+            'версия опросника:': version_key
+        }
+
+        expected_version = '6.1.'
+
+        if expected_version not in result['версия опросника:']:
+            print(f"Ожидаемая версия должна быть: {expected_version}, а в Опроснике используется версия: {result['версия опросника:']}. Работа скрипта прерывается.")
+            exit()
+
+    if __name__ == "__main__":
+        filepath = opros
+        check_version(filepath)
+
+    workbook_name = openpyxl.load_workbook(opros)
+    worksheet = workbook_name['Надёжность']
+    first_row = worksheet[1]
+    mas_ver_dtn = []
+    for cell in first_row:
+        if cell.value is not None:
+            mas_ver_dtn.append(cell.value)
+    # Получение ключа страховщика
+    insurer_key = next(item for item in mas_ver_dtn if item not in ['ОПРОСНИК\nпо оценке зрелости ITSM-процессов', 'версия опросника:'])
+    # Получение ключа версии опросника
+    pattern = r'\d+\.\d+\.\d+\.\d+\.\d+'
+    version_key = next(item for item in mas_ver_dtn if re.match(pattern, str(item)))
+    # Создание нового словаря
+    inn_index = mas_ver_dtn.index('ИНН:')
+    result = {
+        'ОПРОСНИК\nпо оценке зрелости ITSM-процессов': insurer_key,
+        'версия опросника:': version_key,
+        'ИНН:': mas_ver_dtn[inn_index + 1]
+    }
+
+    #Вытаскиваю критичность из Excel
+    second_row = worksheet[3]
+    mas_profile_dtn = []
+    for cell in second_row:
+        if cell.value is not None:
+            mas_profile_dtn.append(cell.value)
+
+    # Получение ключа страховщика
+    insurer_key_profile = next((item for item in mas_profile_dtn if item not in ['Каким максимальным уровнем критичности обладает ИТ-сервис в компании?', 'ФИО ответственного:']), None)
+
+    # Получение значения ФИО
+    fio_dtn = mas_profile_dtn[-1]
+    result_profile = {
+        'Каким максимальным уровнем критичности обладает ИТ-сервис в компании?': insurer_key_profile,
+        'ФИО ответственного:': fio_dtn
+    }
+
+    if result_profile['Каким максимальным уровнем критичности обладает ИТ-сервис в компании?'] not in ['Нет подобных ИТ-сервисов', 'OP', 'BO', 'BC и выше']:
+        print(f'В файле не указана критичность ИТ-сервис в компании, скрипт работать не будет!!!')
+        sys.exit()
+    else:
+        for k, v in dict_inn_company.items():
+            if str(result['ИНН:']) == k:
+                name_dtn = v[1]
+                name_company = v[1] + '_' +result_profile['Каким максимальным уровнем критичности обладает ИТ-сервис в компании?'] + '_ЕРО.xlsx'
+                name_coms = name_company.replace('"', '').replace('«', '').replace('»', '')  #Если в файле  Опросника название компании в кавычках «»
+                save = os.path.join(os.path.dirname(__file__), name_coms)
+                break
+
+            else:
+                name_dtn = result['ОПРОСНИК\nпо оценке зрелости ITSM-процессов']
+                name_company = result['ОПРОСНИК\nпо оценке зрелости ITSM-процессов'] + '_' +result_profile['Каким максимальным уровнем критичности обладает ИТ-сервис в компании?'] + '_ЕРО.xlsx'
+                name_coms = name_company.replace('"', '').replace('«', '').replace('»', '')  #Если в файле  Опросника название компании в кавычках «»
+                save = os.path.join(os.path.dirname(__file__), name_coms)
+
+
+    workbook_dtn = openpyxl.load_workbook(baza_ero)
+    sheet = workbook_dtn.active
+    first_column = sheet["A"]
+    count_dtn_code = 0
+    for cell in first_column:
+        if cell.value != 'Код задачи/отклонения':
+            count_dtn_code += 1
+        else:
+            break
+
+    print()
+    print('-------- Формирую и расчитываю новую анкету по ЕДК --------')
+    print()
+
+
+
+    ws_itsm.xlsx_to_dict(path=baza_ero, select_sheet='Единая дорожная карта', data_only=True, skiprows=count_dtn_code)
+    ws_as_code_dtn.xlsx_to_dict(path=znaniya, select_sheet='База АС')
+    ws_code_baza_itsm.xlsx_to_dict(path=znaniya, select_sheet='База')
+    ws_oprosnik.xlsx_to_dict(path=opros, select_sheet='Надёжность', skiprows=3, data_only=True)
+
+    mas_key_dtn = [] #Добавляем все коды по АС из файла Базы Знаний
+    for key_dtn in ws_as_code_dtn.sheet_items:
+        mas_key_dtn.append(key_dtn.get('Номер вопроса'))
+
+
+    book_stack = {}
+    book_stata_uroven = {}
+    book_itsm = {}
+    book_profile = {}
+    book_dtn_prof = {}
+    #Словари для Опросника
+    book_opros = {}
+
+
+    dict_itsm = {'ITSM-INC': 'Управление технологическими инцидентами',
+                 'ITSM-CATM': 'Управление каталогом сервисов',
+                 'ITSM-SLM': 'Управление уровнями сервисов',
+                 'ITSM-PRB': 'Управление технологическими проблемами',
+                 'ITSM-ERM': 'Управление технологическими рисками',
+                 'ITSM-ICHG': 'Управление инфраструктурными изменениями',
+                 'ITSM-CONT': 'Управление непрерывностью технологий',
+                 'ITSM-AVL': 'Управление доступностью технологий',
+                 'ITSM-M&E': 'Управление технологическими событиями и мониторингом',
+                 'ITSM-RFF': 'Управление технологическими запросами на обслуживание',
+                 'ITSM-CFG': 'Управление конфигурациями',
+                 'ITSM-UPD': 'Управление обновлением ПО',
+                 'ITSM-SD': 'Управление технологическими обращениями',
+                 'ITSM-CAP': 'Управление мощностями технологий',
+                 'ITSM-MNTW': 'Управление регламентными работами'
+                 }
+
+    dict_itsm_dtn = {'ITSM-CFG': '5492.CFG.',
+                     'ITSM-CATM': '5492.CATM.',
+                     'ITSM-SLM': '5492.SLM.',
+                     'ITSM-INC': '5492.INC.',
+                     'ITSM-PRB': '5492.PRB.',
+                     'ITSM-ERM': '5492.ERM.',
+                     'ITSM-RFF': '5492.RFF.',
+                     'ITSM-ICHG': '5492.ICHG.',
+                     'ITSM-UPD': '5492.UPD.',
+                     'ITSM-AVL': '5492.AVL.',
+                     'ITSM-CONT': '5492.CONT.',
+                     'ITSM-M&E': '5492.M&E.',
+                     'ITSM-CAP': '5492.CAP.',
+                     'ITSM-SD': '5492.SD.',
+                     'ITSM-MNTW': '5492.MNTW.'
+
+                     }
+    #Собираю информацию из Базы Знаний
+    for mq in ws_code_baza_itsm.sheet_items:
+        juice_price = mq.setdefault('Код вопроса')
+        juice_two = mq.setdefault('Название процесса')
+        book_profile.setdefault(juice_price, [])
+        book_profile[juice_price].append(juice_two)
+
+
+   # ================= Собираю информацию из ЕДК и добавляем префикс DTN- к ключам ITSM=================
+    # Ключи, к значениям которых нужно добавить префикс DTN-
+    # keys_to_update = ['Код вопроса ЕОИТ', 'Код объекта']
+    keys_to_update = 'Код вопроса ЕОИТ'
+    for item in ws_itsm.sheet_items:
+        for key in keys_to_update:
+            value = item.get(key, '')
+            if 'ITSM-' in value:
+                if value and not value.startswith('DTN-'):
+                    item[key] = 'DTN-' + value
+    #====================================================================================================
+
+    #Собираю информацию из ЕДК
+    for rq in ws_itsm.sheet_items:
+        juice_zero = rq.setdefault('Код объекта')
+        juice_one = rq.setdefault('Код вопроса ЕОИТ')
+        juice_two = rq.setdefault('Задача / выявленное отклонение')
+        juice_four = rq.setdefault('Рекомендованные мероприятия')
+        juice_six = rq.setdefault('Уровень принятия решения')
+        juice_three = rq.setdefault('Вхождение в уровни готовности')
+        juice_seven = rq.setdefault('Уровень критичности')
+        juice_eight = rq.setdefault('Запланированное мероприятие')
+        juice_night = rq.setdefault('Код мероприятия из трекера компании Группы (при использовании трекера)')
+        juice_ten = rq.setdefault('Дата начала мероприятий')
+        juice_eleven = rq.setdefault('Дата окончания мероприятий')
+        juice_twelv = rq.setdefault('Ответственный')
+        juice_thirteen = rq.setdefault('Статус')
+        juice_fourteen = rq.setdefault('Комментарии компании Группы')
+        juice_fiveteen = rq.setdefault('Вид объекта 1 уровень')
+        juce_sixteen = rq.setdefault('Объект')
+        juice_seventeen = rq.setdefault('Комментарии инициатора')
+
+        #Если есть код вопроса в словаре Базы знаний, то забираю эти поля
+        if juice_one in book_profile.keys():
+            book_itsm.setdefault(juice_one, [])
+            book_itsm[juice_one].append(juice_zero)
+            book_itsm[juice_one].append(juice_two)
+            book_itsm[juice_one].append(juice_three)
+            book_itsm[juice_one].append(juice_four)
+            book_itsm[juice_one].append(juice_six)
+            book_itsm[juice_one].append(juice_seven)
+            book_itsm[juice_one].append(juice_eight)
+            book_itsm[juice_one].append(juice_night)
+            book_itsm[juice_one].append(juice_ten)
+            book_itsm[juice_one].append(juice_eleven)
+            book_itsm[juice_one].append(juice_twelv)
+            book_itsm[juice_one].append(juice_thirteen)
+            book_itsm[juice_one].append(juice_fourteen)
+            book_itsm[juice_one].append(juice_seventeen)
+            book_itsm[juice_one].append(juce_sixteen)
+            book_itsm[juice_one].append(juice_fiveteen)
+
+        #Так как в общей ЕДК будут АС не только в ДТН но и в других группазх, то забираю только те коды которые соответствуют нашей Базе знаниий
+        if juice_fiveteen == 'АС' and juice_one in mas_key_dtn:
+            #Словарь для добавления информации по всем АС для ЕДК
+            book_stack.setdefault(juce_sixteen, [])
+            book_stack[juce_sixteen].append(juice_one)
+            book_stack[juce_sixteen].append(juice_zero)
+            book_stack[juce_sixteen].append(juice_two)
+            book_stack[juce_sixteen].append(juice_three)
+            book_stack[juce_sixteen].append(juice_four)
+            book_stack[juce_sixteen].append(juice_six)
+            book_stack[juce_sixteen].append(juice_seven)
+            book_stack[juce_sixteen].append(juice_eight)
+            book_stack[juce_sixteen].append(juice_night)
+            book_stack[juce_sixteen].append(juice_ten)
+            book_stack[juce_sixteen].append(juice_eleven)
+            book_stack[juce_sixteen].append(juice_twelv)
+            book_stack[juce_sixteen].append(juice_thirteen)
+            book_stack[juce_sixteen].append(juice_fourteen)
+            book_stack[juce_sixteen].append(juice_fiveteen)
+            book_stack[juce_sixteen].append(juice_seventeen)
+
+            #Словарь для расчета АС
+            book_stata_uroven.setdefault(juce_sixteen, [])
+            book_stata_uroven[juce_sixteen].append(juice_one)
+            book_stata_uroven[juce_sixteen].append(juice_thirteen)
+            book_stata_uroven[juce_sixteen].append(juice_seven)
+            book_stata_uroven[juce_sixteen].append(juice_zero)
+
+    #------------------------------------------------------------------------------------------------------------------
+
+        # ----- При парсинге из ЕДК в случае если отсутствует префикс DTN, то его добавляем в словарь-----
+    # Создаём новый словарь с нужными ключами
+    # updated_book_opros_edk = {}
+    # for key, value in book_itsm.items():
+    #     if not key.startswith('DTN-'):
+    #         new_key = 'DTN-' + key
+    #     else:
+    #         new_key = key
+    #     updated_book_opros_edk[new_key] = value
+    #
+    # # Перезаписываем исходный словарь (если нужно)
+    # book_itsm = updated_book_opros_edk
+    # print(book_itsm)
+
+
+    dict_itsm = {'ITSM-INC': 'Управление технологическими инцидентами',
+                 'ITSM-CATM': 'Управление каталогом сервисов',
+                 'ITSM-SLM': 'Управление уровнями сервисов',
+                 'ITSM-PRB': 'Управление технологическими проблемами',
+                 'ITSM-ERM': 'Управление технологическими рисками',
+                 'ITSM-ICHG': 'Управление инфраструктурными изменениями',
+                 'ITSM-CONT': 'Управление непрерывностью технологий',
+                 'ITSM-AVL': 'Управление доступностью технологий',
+                 'ITSM-M&E': 'Управление технологическими событиями и мониторингом',
+                 'ITSM-RFF': 'Управление технологическими запросами на обслуживание',
+                 'ITSM-CFG': 'Управление конфигурациями',
+                 'ITSM-UPD': 'Управление обновлением ПО',
+                 'ITSM-SD': 'Управление технологическими обращениями',
+                 'ITSM-CAP': 'Управление мощностями технологий',
+                 'ITSM-MNTW': 'Управление регламентными работами'
+                 }
+
+    dict_itsm_dtn = {'ITSM-CFG': '5492.CFG.',
+                     'ITSM-CATM': '5492.CATM.',
+                     'ITSM-SLM': '5492.SLM.',
+                     'ITSM-INC': '5492.INC.',
+                     'ITSM-PRB': '5492.PRB.',
+                     'ITSM-ERM': '5492.ERM.',
+                     'ITSM-RFF': '5492.RFF.',
+                     'ITSM-ICHG': '5492.ICHG.',
+                     'ITSM-UPD': '5492.UPD.',
+                     'ITSM-AVL': '5492.AVL.',
+                     'ITSM-CONT': '5492.CONT.',
+                     'ITSM-M&E': '5492.M&E.',
+                     'ITSM-CAP': '5492.CAP.',
+                     'ITSM-SD': '5492.SD.',
+                     'ITSM-MNTW': '5492.MNTW.'
+
+                     }
+
+    #TODO: Собираем информацию с Опросника согласно полям!
+    for b in ws_oprosnik.sheet_items:
+        juice_id = b.setdefault('ID\nвопроса')
+        juice_urov_ur_got = b.setdefault('Уровень готовности в зависимости от критичности АС')
+        juice_ur_otklon = b.setdefault('Уровень отклонения')
+        juice_answer = b.setdefault('Ответ с учётом артефакта \n(авто)')
+
+        book_opros.setdefault(juice_id, [])
+        book_opros[juice_id].append(juice_urov_ur_got)
+        book_opros[juice_id].append(juice_ur_otklon)
+        book_opros[juice_id].append(juice_answer)
+    removed_value = book_opros.pop('-')  # Удаляем ключ '-'
+
+    #======================МАПИМ ВСЁ ИЗ ОПРОСНИКА И ДОБАВЛЯЕМ ПРЕФИКС DTN- ЕСЛИ В ОПРОСНИКЕ ЕГО НЕТ==============================
+    # Создаём новый словарь с нужными ключами
+    updated_book_opros = {}
+    for key, value in book_opros.items():
+        if not key.startswith('DTN-'):
+            new_key = 'DTN-' + key
+        else:
+            new_key = key
+        updated_book_opros[new_key] = value
+
+    # Перезаписываем исходный словарь (если нужно)
+    book_opros = updated_book_opros
+    #=============================================================================================================================
+
+    oprosnik_dict = copy.deepcopy(book_opros) #Делаем копию Опросника(для будущего сравнения с ЕДК по отклонениям и количеству общего к выполненным ---> Пример Критичный: 120/80)
+
+
+    # Создаем defaultdict, где значения по умолчанию — пустые словари
+    result_dicts = defaultdict(dict)
+    result_dicts_edk = defaultdict(dict)
+
+    #Расчитываем сколько компания выполнила за период отклонений первые цифры по критичности
+    # должны совпадать с первым ЕРО(к примеру 107 / 0, было то тут должна остаться цифра 107)
+    itsm_dtn_all = {'Критичный': 0, 'Высокий': 0, 'Умеренный': 0, 'Рекомендация на развитие': 0} # Этот словарь для подсчета общего числа отклонений
+    itsm_dtn_ikrement = {'Критичный': 0, 'Высокий': 0, 'Умеренный': 0, 'Рекомендация на развитие': 0}  # Этот словарь для подсчета выполненных отклонений
+    for i, d in book_itsm.items():
+        if i in book_profile:
+            itsm_dtn_all[d[5]] += 1
+        if '(ПАО) Устранено - подтверждено ПАО' in d[11] or '(ПАО) Исключение из реестра - подтверждено ПАО' in d[11]:
+            itsm_dtn_ikrement[d[5]] += 1
+
+
+    prefixes = [
+        'ITSM-INC', 'ITSM-CATM', 'ITSM-CFG', 'ITSM-SLM', 'ITSM-PRB', 'ITSM-ERM',
+        'ITSM-RFF', 'ITSM-ICHG', 'ITSM-UPD', 'ITSM-AVL', 'ITSM-M&E', 'ITSM-CONT',
+        'ITSM-CAP', 'ITSM-SD', 'ITSM-MNTW']
+
+    for key, value in book_opros.items():
+        if value[0] != 'ЦТК':
+            for prefix in prefixes:
+                if prefix in key:
+                    result_dicts[prefix][key] = value
+
+
+                    break
+
+
+    # ОБНОВЛЯЕМ ДАТЫ В СЛОВАРЕ С ITSM, Т.Е. МЕНЯЕМ ЕСЛИ НЕВЕРНЫЙ ФОРМАТ ПРИМЕР ----> 14.02.2025 ----> 102025
+    mas_start_kvartal = []
+    mas_end_kvartal = []
+
+    # Массив для записи будущих кварталов
+    mas_data_list = []
+
+    for i, v in book_itsm.items():
+        new_v = list(v)  # Создаем копию списка значений, так как v может быть tuple
+        if v[8] != "":
+            result_start = date_to_quarter_year(v[8])
+            new_v[8] = result_start
+            mas_start_kvartal.append(result_start)
+        else:
+            pass
+            # print(f"У {i} Пустая дата начала")
+        if v[9] != "":
+            result_end = date_to_quarter_year(v[9])
+            new_v[9] = result_end
+            mas_end_kvartal.append(result_end)
+        else:
+            pass
+            # print(f"У {i} Пустая дата окончания")
+
+        book_itsm[i] = tuple(new_v) if isinstance(v, tuple) else new_v  # Сохраняем обратно в словарь
+    #===============================================================================================================
+
+    for key, value in book_itsm.items():
+        for prefix in prefixes:
+            if prefix in key:
+                result_dicts_edk[prefix][key] = value
+                break
+
+
+
+    result_stack = {}
+    for key, value_list in book_stack.items():
+        result_stack[key] = [value_list[i:i+16] for i in range(0, len(value_list), 16)]
+
+
+    # ОБНОВЛЯЕМ ДАТЫ В СЛОВАРЕ С ИТ-УСЛУГАМИ, Т.Е. МЕНЯЕМ ЕСЛИ НЕВЕРНЫЙ ФОРМАТ ПРИМЕР ----> 14.02.2025 ----> 102025
+    for process_name, process_data in result_stack.items():
+        updated_data = []
+        for item in process_data:
+            new_item = item.copy()  # Создаем копию элемента
+
+            # Обновляем дату начала (индекс 9)
+            if new_item[9]:
+                new_item[9] = date_to_quarter_year(new_item[9]) or new_item[9]
+            # Обновляем дату окончания (индекс 10)
+            if new_item[10]:
+                new_item[10] = date_to_quarter_year(new_item[10]) or new_item[10]
+
+            updated_data.append(new_item)
+
+        result_stack[process_name] = updated_data
+    #===============================================================================================================
+
+
+
+
+    # ==============================================================================
+    # Функция для нахождения следующих кварталов после текущего квартала ДЛЯ ВСЕХ ITSM
+    for category, items in result_dicts_edk.items():
+        for item_id, item_data in items.items():
+            status = item_data[11] if len(item_data) > 11 else ""
+            status_excluded = (
+                    status == "(ПАО) Устранено - подтверждено ПАО" or
+                    status == "(ПАО) Исключение из реестра - подтверждено ПАО" or
+                    status == "(ПАО) Принятие рисков - утверждено ПАО"
+            )
+
+            if not status_excluded and item_data[9] != "":
+                mas_data_list.append(item_data[9])
+
+
+    # ===============================================================================
+    # Функция для нахождения следующих кварталов после текущего квартала ДЛЯ ВСЕХ AS
+    for date_str, date_tuple in result_stack.items():
+        for i in date_tuple:
+
+
+            # print(date_str, i)
+            status_excluded = (
+                    i[12] == "(ПАО) Устранено - подтверждено ПАО" or
+                    i[12] == "(ПАО) Исключение из реестра - подтверждено ПАО"
+            )
+            if not status_excluded and i[10] != "":
+                mas_data_list.append(i[10])
+
+    future_quarters = find_future_quarters(current_quarter, mas_data_list)
+
+
+    # ==============================================================================
+
+    # Сортировка дат от меньшего к большему
+    # =====================================
+    def sort_key(q):
+        quarter = int(q[0])  # Первый символ — номер квартала
+        year = int(q[2:])  # Год — после "Q"
+        return (year, quarter)
+
